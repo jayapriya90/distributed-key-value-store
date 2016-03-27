@@ -77,7 +77,7 @@ public class FileServerEndPointsImpl implements FileServerEndPoints.Iface {
             fileInfos.add(new FileInfo(filename, version, contents));
         }
         FileServerMetaData fileServerMetaData = new FileServerMetaData(fileInfos);
-        LOG.debug("Returning file server metadata: " + fileServerMetaData);
+        LOG.info("Returning file server metadata: " + fileServerMetaData);
         return fileServerMetaData;
     }
 
@@ -90,6 +90,7 @@ public class FileServerEndPointsImpl implements FileServerEndPoints.Iface {
 
         ReadResponse readResponse = new ReadResponse(Status.SUCCESS);
         readResponse.setContents(contentsMap.get(filename));
+        readResponse.setVersion(versionMap.get(filename));
         LOG.info("Sending read response: " + readResponse + " for file: " + filename);
         return readResponse;
     }

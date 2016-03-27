@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by jayapriya on 3/25/16.
@@ -24,16 +26,20 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
     private Set<FileServerInfo> servers;
     private boolean userSpecificedQuorumCount;
 
+    // background thread to notify non-quorum members
+    private ExecutorService backgroundThread;
+
     public CoordinatorEndPointsImpl(int nr, int nw) {
         this.n = 0;
         this.nr = nr;
         this.nw = nw;
         this.servers = new HashSet<FileServerInfo>();
-        if (nr >= 0 && nw >=0) {
+        if (nr >= 0 && nw >= 0) {
             this.userSpecificedQuorumCount = true;
         } else {
             this.userSpecificedQuorumCount = false;
         }
+        this.backgroundThread = Executors.newSingleThreadExecutor();
     }
 
     @Override
@@ -44,26 +50,32 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
             return new FileServerResponse(Status.NO_NODE_FOUND);
         }
         Random rand = new Random();
-        int index = rand.nextInt() % nodes.size();
+        int randInt = rand.nextInt();
+        // should always be positive
+        if (randInt < 0) {
+            randInt = -1 * randInt;
+        }
+        int index = randInt % nodes.size();
         FileServerResponse result = new FileServerResponse(Status.SUCCESS);
         result.setFileServerInfo(nodes.get(index));
         return result;
     }
 
     @Override
-    public List<FileServerMetaData> getFileServersMetadata() throws TException {
-        List<FileServerMetaData> result = new ArrayList<FileServerMetaData>();
+    public Map<FileServerInfo, FileServerMetaData> getMetadata() throws TException {
+        Map<FileServerInfo, FileServerMetaData> result = new HashMap<FileServerInfo, FileServerMetaData>();
         for (FileServerInfo server : servers) {
             TTransport nodeSocket = new TSocket(server.getHostname(), server.getPort());
             nodeSocket.open();
             TProtocol protocol = new TBinaryProtocol(nodeSocket);
             FileServerEndPoints.Client client = new FileServerEndPoints.Client(protocol);
             FileServerMetaData fileServerMetaData = client.getFileServerMetadata();
-            result.add(fileServerMetaData);
+            result.put(server, fileServerMetaData);
             nodeSocket.close();
         }
         return result;
     }
+
 
     @Override
     public void join(String hostname, int Port) throws TException {
@@ -104,7 +116,8 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
     }
 
     private ReadResponse readInternal(String filename) throws TException {
-        List<FileServerInfo> readQuorum = getRandomNodes(nr);
+        LOG.info("Read request received for file: " + filename);
+        List<FileServerInfo> readQuorum = getQuorumServers(nr);
         long maxVersion = Long.MIN_VALUE;
         FileServerInfo maxVersionServer = null;
         // Connect to each file server and get their version number
@@ -119,7 +132,7 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
             }
         }
 
-        LOG.debug(maxVersionServer + " contains latest version: " + maxVersion + " for file: " + filename);
+        LOG.info(maxVersionServer + " contains latest read version: " + maxVersion + " for file: " + filename);
         return getReadResponse(maxVersionServer, filename);
     }
 
@@ -129,7 +142,7 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
         TProtocol protocol = new TBinaryProtocol(nodeSocket);
         FileServerEndPoints.Client client = new FileServerEndPoints.Client(protocol);
         ReadResponse response = client.readContents(filename);
-        LOG.debug(server + " returned read response: " + response + " for file: " + filename);
+        LOG.info(server + " returned read response: " + response + " for file: " + filename);
         nodeSocket.close();
         return response;
     }
@@ -140,19 +153,111 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
         TProtocol protocol = new TBinaryProtocol(nodeSocket);
         FileServerEndPoints.Client client = new FileServerEndPoints.Client(protocol);
         long version = client.getVersion(filename);
-        LOG.debug(server + " returned version: " + version + " for file: " + filename);
+        LOG.info(server + " returned version: " + version + " for file: " + filename);
         nodeSocket.close();
         return version;
     }
 
     private WriteResponse writeInternal(String filename, String contents) throws TException {
-        List<FileServerInfo> writeQuorum = getRandomNodes(nw);
-        return null;
+        LOG.info("Write request received for file: " + filename + " contents: " + contents);
+        List<FileServerInfo> writeQuorum = getQuorumServers(nw);
+        long maxVersion = Long.MIN_VALUE;
+        FileServerInfo maxVersionServer = null;
+        // Connect to each file server and get their version number
+        // Find max version number containing file server
+        // Forward the write request to that file server with incremented version
+        // send back the received write response
+        for (FileServerInfo server : writeQuorum) {
+            long version = getVersionFromFileServer(server, filename);
+            if (version > maxVersion) {
+                maxVersion = version;
+                maxVersionServer = server;
+            }
+        }
+
+        LOG.info(maxVersionServer + " contains latest write version: " + maxVersion + " for file: " + filename);
+
+        // increment version
+        maxVersion++;
+        LOG.info("Incremented version number for file: " + filename + " to version: " + maxVersion);
+
+        WriteResponse writeResponse = getWriteResponse(maxVersionServer, filename, filename, maxVersion);
+        LOG.info("Updated quorum file server (with max version): " + maxVersionServer + " to use new version: " + maxVersion);
+
+        // update other file servers in quorum to latest version and wait for it to complete
+        LOG.info("Updating other file servers in quorum to latest version: " + maxVersion);
+        writeQuorum.remove(maxVersionServer);
+        for (FileServerInfo quorumServer : writeQuorum) {
+            WriteResponse wr = getWriteResponse(quorumServer, filename, contents, maxVersion);
+            LOG.info("Updated quorum server: " + quorumServer + " to version: " + wr.getVersion());
+        }
+
+        // update other file servers not in quorum to latest version in background and don't wait for completion
+        LOG.info("Notifying file servers not in quorum in background thread to latest version: " + maxVersion);
+        List<FileServerInfo> nonQuorumServers = getNonQuorumServers(writeQuorum);
+        backgroundThread.submit(new NonQuorumWrite(nonQuorumServers, filename, contents, maxVersion));
+
+        // return write response
+        LOG.info("Successfully updated file: " + filename + " to version: " + writeResponse.getVersion());
+        LOG.info("Returning write response: " + writeResponse + " to client");
+        return writeResponse;
     }
 
-    private List<FileServerInfo> getRandomNodes(int n) {
+    private WriteResponse getWriteResponse(FileServerInfo server, String filename, String contents, long newVersion) throws TException {
+        TTransport nodeSocket = new TSocket(server.getHostname(), server.getPort());
+        nodeSocket.open();
+        TProtocol protocol = new TBinaryProtocol(nodeSocket);
+        FileServerEndPoints.Client client = new FileServerEndPoints.Client(protocol);
+        WriteResponse writeResponse = client.writeContents(filename, contents, newVersion);
+        return writeResponse;
+    }
+
+    private List<FileServerInfo> getQuorumServers(int n) {
         List<FileServerInfo> nodes = new ArrayList<FileServerInfo>(servers);
         Collections.shuffle(nodes);
         return nodes.subList(0, n);
+    }
+
+    private List<FileServerInfo> getNonQuorumServers(List<FileServerInfo> quorum) {
+        List<FileServerInfo> nodes = new ArrayList<FileServerInfo>(servers);
+        for (FileServerInfo serverInfo : quorum) {
+            nodes.remove(serverInfo);
+        }
+        return nodes;
+    }
+
+    private static class NonQuorumWrite implements Runnable {
+        private List<FileServerInfo> nonQuorum;
+        private String filename;
+        private String contents;
+        private long version;
+
+        public NonQuorumWrite(List<FileServerInfo> nonQuorum, String filename, String contents, long version) {
+            this.nonQuorum = nonQuorum;
+            this.filename = filename;
+            this.contents = contents;
+            this.version = version;
+        }
+
+        @Override
+        public void run() {
+            for (FileServerInfo serverInfo : nonQuorum) {
+                TTransport nodeSocket = new TSocket(serverInfo.getHostname(), serverInfo.getPort());
+                try {
+                    nodeSocket.open();
+                    TProtocol protocol = new TBinaryProtocol(nodeSocket);
+                    FileServerEndPoints.Client client = new FileServerEndPoints.Client(protocol);
+                    client.writeContents(filename, contents, version);
+                    LOG.info("Background thread - Successfully updated " + serverInfo + " about file: " + filename + " contents: " +
+                            contents + " version: " + version);
+                } catch (TException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (nodeSocket != null) {
+                        nodeSocket.close();
+                    }
+                }
+            }
+        }
     }
 }

@@ -41,7 +41,7 @@ public class CoordinatorEndPoints {
 
     public FileServerResponse getFileServer() throws org.apache.thrift.TException;
 
-    public List<edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> getFileServersMetadata() throws org.apache.thrift.TException;
+    public Map<edu.umn.cs.distributedkeyvaluestore.FileServerInfo,edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> getMetadata() throws org.apache.thrift.TException;
 
     public void join(String hostname, int Port) throws org.apache.thrift.TException;
 
@@ -55,7 +55,7 @@ public class CoordinatorEndPoints {
 
     public void getFileServer(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
-    public void getFileServersMetadata(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void getMetadata(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
     public void join(String hostname, int Port, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
@@ -107,26 +107,26 @@ public class CoordinatorEndPoints {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getFileServer failed: unknown result");
     }
 
-    public List<edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> getFileServersMetadata() throws org.apache.thrift.TException
+    public Map<edu.umn.cs.distributedkeyvaluestore.FileServerInfo,edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> getMetadata() throws org.apache.thrift.TException
     {
-      send_getFileServersMetadata();
-      return recv_getFileServersMetadata();
+      send_getMetadata();
+      return recv_getMetadata();
     }
 
-    public void send_getFileServersMetadata() throws org.apache.thrift.TException
+    public void send_getMetadata() throws org.apache.thrift.TException
     {
-      getFileServersMetadata_args args = new getFileServersMetadata_args();
-      sendBase("getFileServersMetadata", args);
+      getMetadata_args args = new getMetadata_args();
+      sendBase("getMetadata", args);
     }
 
-    public List<edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> recv_getFileServersMetadata() throws org.apache.thrift.TException
+    public Map<edu.umn.cs.distributedkeyvaluestore.FileServerInfo,edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> recv_getMetadata() throws org.apache.thrift.TException
     {
-      getFileServersMetadata_result result = new getFileServersMetadata_result();
-      receiveBase(result, "getFileServersMetadata");
+      getMetadata_result result = new getMetadata_result();
+      receiveBase(result, "getMetadata");
       if (result.isSetSuccess()) {
         return result.success;
       }
-      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getFileServersMetadata failed: unknown result");
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getMetadata failed: unknown result");
     }
 
     public void join(String hostname, int Port) throws org.apache.thrift.TException
@@ -242,32 +242,32 @@ public class CoordinatorEndPoints {
       }
     }
 
-    public void getFileServersMetadata(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void getMetadata(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      getFileServersMetadata_call method_call = new getFileServersMetadata_call(resultHandler, this, ___protocolFactory, ___transport);
+      getMetadata_call method_call = new getMetadata_call(resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
-    public static class getFileServersMetadata_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public getFileServersMetadata_call(org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+    public static class getMetadata_call extends org.apache.thrift.async.TAsyncMethodCall {
+      public getMetadata_call(org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getFileServersMetadata", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        getFileServersMetadata_args args = new getFileServersMetadata_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getMetadata", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        getMetadata_args args = new getMetadata_args();
         args.write(prot);
         prot.writeMessageEnd();
       }
 
-      public List<edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> getResult() throws org.apache.thrift.TException {
+      public Map<edu.umn.cs.distributedkeyvaluestore.FileServerInfo,edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> getResult() throws org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        return (new Client(prot)).recv_getFileServersMetadata();
+        return (new Client(prot)).recv_getMetadata();
       }
     }
 
@@ -381,7 +381,7 @@ public class CoordinatorEndPoints {
 
     private static <I extends Iface> Map<String,  org.apache.thrift.ProcessFunction<I, ? extends  org.apache.thrift.TBase>> getProcessMap(Map<String,  org.apache.thrift.ProcessFunction<I, ? extends  org.apache.thrift.TBase>> processMap) {
       processMap.put("getFileServer", new getFileServer());
-      processMap.put("getFileServersMetadata", new getFileServersMetadata());
+      processMap.put("getMetadata", new getMetadata());
       processMap.put("join", new join());
       processMap.put("getFileServerMetadata", new getFileServerMetadata());
       processMap.put("submitRequest", new submitRequest());
@@ -408,22 +408,22 @@ public class CoordinatorEndPoints {
       }
     }
 
-    public static class getFileServersMetadata<I extends Iface> extends org.apache.thrift.ProcessFunction<I, getFileServersMetadata_args> {
-      public getFileServersMetadata() {
-        super("getFileServersMetadata");
+    public static class getMetadata<I extends Iface> extends org.apache.thrift.ProcessFunction<I, getMetadata_args> {
+      public getMetadata() {
+        super("getMetadata");
       }
 
-      public getFileServersMetadata_args getEmptyArgsInstance() {
-        return new getFileServersMetadata_args();
+      public getMetadata_args getEmptyArgsInstance() {
+        return new getMetadata_args();
       }
 
       protected boolean isOneway() {
         return false;
       }
 
-      public getFileServersMetadata_result getResult(I iface, getFileServersMetadata_args args) throws org.apache.thrift.TException {
-        getFileServersMetadata_result result = new getFileServersMetadata_result();
-        result.success = iface.getFileServersMetadata();
+      public getMetadata_result getResult(I iface, getMetadata_args args) throws org.apache.thrift.TException {
+        getMetadata_result result = new getMetadata_result();
+        result.success = iface.getMetadata();
         return result;
       }
     }
@@ -502,7 +502,7 @@ public class CoordinatorEndPoints {
 
     private static <I extends AsyncIface> Map<String,  org.apache.thrift.AsyncProcessFunction<I, ? extends  org.apache.thrift.TBase,?>> getProcessMap(Map<String,  org.apache.thrift.AsyncProcessFunction<I, ? extends  org.apache.thrift.TBase, ?>> processMap) {
       processMap.put("getFileServer", new getFileServer());
-      processMap.put("getFileServersMetadata", new getFileServersMetadata());
+      processMap.put("getMetadata", new getMetadata());
       processMap.put("join", new join());
       processMap.put("getFileServerMetadata", new getFileServerMetadata());
       processMap.put("submitRequest", new submitRequest());
@@ -560,20 +560,20 @@ public class CoordinatorEndPoints {
       }
     }
 
-    public static class getFileServersMetadata<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, getFileServersMetadata_args, List<edu.umn.cs.distributedkeyvaluestore.FileServerMetaData>> {
-      public getFileServersMetadata() {
-        super("getFileServersMetadata");
+    public static class getMetadata<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, getMetadata_args, Map<edu.umn.cs.distributedkeyvaluestore.FileServerInfo,edu.umn.cs.distributedkeyvaluestore.FileServerMetaData>> {
+      public getMetadata() {
+        super("getMetadata");
       }
 
-      public getFileServersMetadata_args getEmptyArgsInstance() {
-        return new getFileServersMetadata_args();
+      public getMetadata_args getEmptyArgsInstance() {
+        return new getMetadata_args();
       }
 
-      public AsyncMethodCallback<List<edu.umn.cs.distributedkeyvaluestore.FileServerMetaData>> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
+      public AsyncMethodCallback<Map<edu.umn.cs.distributedkeyvaluestore.FileServerInfo,edu.umn.cs.distributedkeyvaluestore.FileServerMetaData>> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
         final org.apache.thrift.AsyncProcessFunction fcall = this;
-        return new AsyncMethodCallback<List<edu.umn.cs.distributedkeyvaluestore.FileServerMetaData>>() { 
-          public void onComplete(List<edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> o) {
-            getFileServersMetadata_result result = new getFileServersMetadata_result();
+        return new AsyncMethodCallback<Map<edu.umn.cs.distributedkeyvaluestore.FileServerInfo,edu.umn.cs.distributedkeyvaluestore.FileServerMetaData>>() { 
+          public void onComplete(Map<edu.umn.cs.distributedkeyvaluestore.FileServerInfo,edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> o) {
+            getMetadata_result result = new getMetadata_result();
             result.success = o;
             try {
               fcall.sendResponse(fb,result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
@@ -586,7 +586,7 @@ public class CoordinatorEndPoints {
           public void onError(Exception e) {
             byte msgType = org.apache.thrift.protocol.TMessageType.REPLY;
             org.apache.thrift.TBase msg;
-            getFileServersMetadata_result result = new getFileServersMetadata_result();
+            getMetadata_result result = new getMetadata_result();
             {
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TBase)new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
@@ -606,8 +606,8 @@ public class CoordinatorEndPoints {
         return false;
       }
 
-      public void start(I iface, getFileServersMetadata_args args, org.apache.thrift.async.AsyncMethodCallback<List<edu.umn.cs.distributedkeyvaluestore.FileServerMetaData>> resultHandler) throws TException {
-        iface.getFileServersMetadata(resultHandler);
+      public void start(I iface, getMetadata_args args, org.apache.thrift.async.AsyncMethodCallback<Map<edu.umn.cs.distributedkeyvaluestore.FileServerInfo,edu.umn.cs.distributedkeyvaluestore.FileServerMetaData>> resultHandler) throws TException {
+        iface.getMetadata(resultHandler);
       }
     }
 
@@ -1379,14 +1379,14 @@ public class CoordinatorEndPoints {
 
   }
 
-  public static class getFileServersMetadata_args implements org.apache.thrift.TBase<getFileServersMetadata_args, getFileServersMetadata_args._Fields>, java.io.Serializable, Cloneable, Comparable<getFileServersMetadata_args>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getFileServersMetadata_args");
+  public static class getMetadata_args implements org.apache.thrift.TBase<getMetadata_args, getMetadata_args._Fields>, java.io.Serializable, Cloneable, Comparable<getMetadata_args>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getMetadata_args");
 
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
-      schemes.put(StandardScheme.class, new getFileServersMetadata_argsStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new getFileServersMetadata_argsTupleSchemeFactory());
+      schemes.put(StandardScheme.class, new getMetadata_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new getMetadata_argsTupleSchemeFactory());
     }
 
 
@@ -1449,20 +1449,20 @@ public class CoordinatorEndPoints {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getFileServersMetadata_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getMetadata_args.class, metaDataMap);
     }
 
-    public getFileServersMetadata_args() {
+    public getMetadata_args() {
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public getFileServersMetadata_args(getFileServersMetadata_args other) {
+    public getMetadata_args(getMetadata_args other) {
     }
 
-    public getFileServersMetadata_args deepCopy() {
-      return new getFileServersMetadata_args(this);
+    public getMetadata_args deepCopy() {
+      return new getMetadata_args(this);
     }
 
     @Override
@@ -1495,12 +1495,12 @@ public class CoordinatorEndPoints {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof getFileServersMetadata_args)
-        return this.equals((getFileServersMetadata_args)that);
+      if (that instanceof getMetadata_args)
+        return this.equals((getMetadata_args)that);
       return false;
     }
 
-    public boolean equals(getFileServersMetadata_args that) {
+    public boolean equals(getMetadata_args that) {
       if (that == null)
         return false;
 
@@ -1515,7 +1515,7 @@ public class CoordinatorEndPoints {
     }
 
     @Override
-    public int compareTo(getFileServersMetadata_args other) {
+    public int compareTo(getMetadata_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -1539,7 +1539,7 @@ public class CoordinatorEndPoints {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("getFileServersMetadata_args(");
+      StringBuilder sb = new StringBuilder("getMetadata_args(");
       boolean first = true;
 
       sb.append(")");
@@ -1567,15 +1567,15 @@ public class CoordinatorEndPoints {
       }
     }
 
-    private static class getFileServersMetadata_argsStandardSchemeFactory implements SchemeFactory {
-      public getFileServersMetadata_argsStandardScheme getScheme() {
-        return new getFileServersMetadata_argsStandardScheme();
+    private static class getMetadata_argsStandardSchemeFactory implements SchemeFactory {
+      public getMetadata_argsStandardScheme getScheme() {
+        return new getMetadata_argsStandardScheme();
       }
     }
 
-    private static class getFileServersMetadata_argsStandardScheme extends StandardScheme<getFileServersMetadata_args> {
+    private static class getMetadata_argsStandardScheme extends StandardScheme<getMetadata_args> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, getFileServersMetadata_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, getMetadata_args struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -1596,7 +1596,7 @@ public class CoordinatorEndPoints {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, getFileServersMetadata_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, getMetadata_args struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -1606,39 +1606,39 @@ public class CoordinatorEndPoints {
 
     }
 
-    private static class getFileServersMetadata_argsTupleSchemeFactory implements SchemeFactory {
-      public getFileServersMetadata_argsTupleScheme getScheme() {
-        return new getFileServersMetadata_argsTupleScheme();
+    private static class getMetadata_argsTupleSchemeFactory implements SchemeFactory {
+      public getMetadata_argsTupleScheme getScheme() {
+        return new getMetadata_argsTupleScheme();
       }
     }
 
-    private static class getFileServersMetadata_argsTupleScheme extends TupleScheme<getFileServersMetadata_args> {
+    private static class getMetadata_argsTupleScheme extends TupleScheme<getMetadata_args> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, getFileServersMetadata_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, getMetadata_args struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, getFileServersMetadata_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, getMetadata_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
       }
     }
 
   }
 
-  public static class getFileServersMetadata_result implements org.apache.thrift.TBase<getFileServersMetadata_result, getFileServersMetadata_result._Fields>, java.io.Serializable, Cloneable, Comparable<getFileServersMetadata_result>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getFileServersMetadata_result");
+  public static class getMetadata_result implements org.apache.thrift.TBase<getMetadata_result, getMetadata_result._Fields>, java.io.Serializable, Cloneable, Comparable<getMetadata_result>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getMetadata_result");
 
-    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.LIST, (short)0);
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.MAP, (short)0);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
-      schemes.put(StandardScheme.class, new getFileServersMetadata_resultStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new getFileServersMetadata_resultTupleSchemeFactory());
+      schemes.put(StandardScheme.class, new getMetadata_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new getMetadata_resultTupleSchemeFactory());
     }
 
-    public List<edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> success; // required
+    public Map<edu.umn.cs.distributedkeyvaluestore.FileServerInfo,edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> success; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -1703,17 +1703,18 @@ public class CoordinatorEndPoints {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+          new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
+              new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, edu.umn.cs.distributedkeyvaluestore.FileServerInfo.class), 
               new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, edu.umn.cs.distributedkeyvaluestore.FileServerMetaData.class))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getFileServersMetadata_result.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getMetadata_result.class, metaDataMap);
     }
 
-    public getFileServersMetadata_result() {
+    public getMetadata_result() {
     }
 
-    public getFileServersMetadata_result(
-      List<edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> success)
+    public getMetadata_result(
+      Map<edu.umn.cs.distributedkeyvaluestore.FileServerInfo,edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> success)
     {
       this();
       this.success = success;
@@ -1722,18 +1723,26 @@ public class CoordinatorEndPoints {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public getFileServersMetadata_result(getFileServersMetadata_result other) {
+    public getMetadata_result(getMetadata_result other) {
       if (other.isSetSuccess()) {
-        List<edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> __this__success = new ArrayList<edu.umn.cs.distributedkeyvaluestore.FileServerMetaData>(other.success.size());
-        for (edu.umn.cs.distributedkeyvaluestore.FileServerMetaData other_element : other.success) {
-          __this__success.add(new edu.umn.cs.distributedkeyvaluestore.FileServerMetaData(other_element));
+        Map<edu.umn.cs.distributedkeyvaluestore.FileServerInfo,edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> __this__success = new HashMap<edu.umn.cs.distributedkeyvaluestore.FileServerInfo,edu.umn.cs.distributedkeyvaluestore.FileServerMetaData>(other.success.size());
+        for (Map.Entry<edu.umn.cs.distributedkeyvaluestore.FileServerInfo, edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> other_element : other.success.entrySet()) {
+
+          edu.umn.cs.distributedkeyvaluestore.FileServerInfo other_element_key = other_element.getKey();
+          edu.umn.cs.distributedkeyvaluestore.FileServerMetaData other_element_value = other_element.getValue();
+
+          edu.umn.cs.distributedkeyvaluestore.FileServerInfo __this__success_copy_key = new edu.umn.cs.distributedkeyvaluestore.FileServerInfo(other_element_key);
+
+          edu.umn.cs.distributedkeyvaluestore.FileServerMetaData __this__success_copy_value = new edu.umn.cs.distributedkeyvaluestore.FileServerMetaData(other_element_value);
+
+          __this__success.put(__this__success_copy_key, __this__success_copy_value);
         }
         this.success = __this__success;
       }
     }
 
-    public getFileServersMetadata_result deepCopy() {
-      return new getFileServersMetadata_result(this);
+    public getMetadata_result deepCopy() {
+      return new getMetadata_result(this);
     }
 
     @Override
@@ -1745,22 +1754,18 @@ public class CoordinatorEndPoints {
       return (this.success == null) ? 0 : this.success.size();
     }
 
-    public java.util.Iterator<edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> getSuccessIterator() {
-      return (this.success == null) ? null : this.success.iterator();
-    }
-
-    public void addToSuccess(edu.umn.cs.distributedkeyvaluestore.FileServerMetaData elem) {
+    public void putToSuccess(edu.umn.cs.distributedkeyvaluestore.FileServerInfo key, edu.umn.cs.distributedkeyvaluestore.FileServerMetaData val) {
       if (this.success == null) {
-        this.success = new ArrayList<edu.umn.cs.distributedkeyvaluestore.FileServerMetaData>();
+        this.success = new HashMap<edu.umn.cs.distributedkeyvaluestore.FileServerInfo,edu.umn.cs.distributedkeyvaluestore.FileServerMetaData>();
       }
-      this.success.add(elem);
+      this.success.put(key, val);
     }
 
-    public List<edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> getSuccess() {
+    public Map<edu.umn.cs.distributedkeyvaluestore.FileServerInfo,edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> getSuccess() {
       return this.success;
     }
 
-    public getFileServersMetadata_result setSuccess(List<edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> success) {
+    public getMetadata_result setSuccess(Map<edu.umn.cs.distributedkeyvaluestore.FileServerInfo,edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> success) {
       this.success = success;
       return this;
     }
@@ -1786,7 +1791,7 @@ public class CoordinatorEndPoints {
         if (value == null) {
           unsetSuccess();
         } else {
-          setSuccess((List<edu.umn.cs.distributedkeyvaluestore.FileServerMetaData>)value);
+          setSuccess((Map<edu.umn.cs.distributedkeyvaluestore.FileServerInfo,edu.umn.cs.distributedkeyvaluestore.FileServerMetaData>)value);
         }
         break;
 
@@ -1819,12 +1824,12 @@ public class CoordinatorEndPoints {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof getFileServersMetadata_result)
-        return this.equals((getFileServersMetadata_result)that);
+      if (that instanceof getMetadata_result)
+        return this.equals((getMetadata_result)that);
       return false;
     }
 
-    public boolean equals(getFileServersMetadata_result that) {
+    public boolean equals(getMetadata_result that) {
       if (that == null)
         return false;
 
@@ -1853,7 +1858,7 @@ public class CoordinatorEndPoints {
     }
 
     @Override
-    public int compareTo(getFileServersMetadata_result other) {
+    public int compareTo(getMetadata_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -1887,7 +1892,7 @@ public class CoordinatorEndPoints {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("getFileServersMetadata_result(");
+      StringBuilder sb = new StringBuilder("getMetadata_result(");
       boolean first = true;
 
       sb.append("success:");
@@ -1922,15 +1927,15 @@ public class CoordinatorEndPoints {
       }
     }
 
-    private static class getFileServersMetadata_resultStandardSchemeFactory implements SchemeFactory {
-      public getFileServersMetadata_resultStandardScheme getScheme() {
-        return new getFileServersMetadata_resultStandardScheme();
+    private static class getMetadata_resultStandardSchemeFactory implements SchemeFactory {
+      public getMetadata_resultStandardScheme getScheme() {
+        return new getMetadata_resultStandardScheme();
       }
     }
 
-    private static class getFileServersMetadata_resultStandardScheme extends StandardScheme<getFileServersMetadata_result> {
+    private static class getMetadata_resultStandardScheme extends StandardScheme<getMetadata_result> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, getFileServersMetadata_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, getMetadata_result struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -1941,18 +1946,21 @@ public class CoordinatorEndPoints {
           }
           switch (schemeField.id) {
             case 0: // SUCCESS
-              if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
                 {
-                  org.apache.thrift.protocol.TList _list0 = iprot.readListBegin();
-                  struct.success = new ArrayList<edu.umn.cs.distributedkeyvaluestore.FileServerMetaData>(_list0.size);
-                  edu.umn.cs.distributedkeyvaluestore.FileServerMetaData _elem1;
-                  for (int _i2 = 0; _i2 < _list0.size; ++_i2)
+                  org.apache.thrift.protocol.TMap _map0 = iprot.readMapBegin();
+                  struct.success = new HashMap<edu.umn.cs.distributedkeyvaluestore.FileServerInfo,edu.umn.cs.distributedkeyvaluestore.FileServerMetaData>(2*_map0.size);
+                  edu.umn.cs.distributedkeyvaluestore.FileServerInfo _key1;
+                  edu.umn.cs.distributedkeyvaluestore.FileServerMetaData _val2;
+                  for (int _i3 = 0; _i3 < _map0.size; ++_i3)
                   {
-                    _elem1 = new edu.umn.cs.distributedkeyvaluestore.FileServerMetaData();
-                    _elem1.read(iprot);
-                    struct.success.add(_elem1);
+                    _key1 = new edu.umn.cs.distributedkeyvaluestore.FileServerInfo();
+                    _key1.read(iprot);
+                    _val2 = new edu.umn.cs.distributedkeyvaluestore.FileServerMetaData();
+                    _val2.read(iprot);
+                    struct.success.put(_key1, _val2);
                   }
-                  iprot.readListEnd();
+                  iprot.readMapEnd();
                 }
                 struct.setSuccessIsSet(true);
               } else { 
@@ -1970,19 +1978,20 @@ public class CoordinatorEndPoints {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, getFileServersMetadata_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, getMetadata_result struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
         if (struct.success != null) {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (edu.umn.cs.distributedkeyvaluestore.FileServerMetaData _iter3 : struct.success)
+            oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRUCT, org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
+            for (Map.Entry<edu.umn.cs.distributedkeyvaluestore.FileServerInfo, edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> _iter4 : struct.success.entrySet())
             {
-              _iter3.write(oprot);
+              _iter4.getKey().write(oprot);
+              _iter4.getValue().write(oprot);
             }
-            oprot.writeListEnd();
+            oprot.writeMapEnd();
           }
           oprot.writeFieldEnd();
         }
@@ -1992,16 +2001,16 @@ public class CoordinatorEndPoints {
 
     }
 
-    private static class getFileServersMetadata_resultTupleSchemeFactory implements SchemeFactory {
-      public getFileServersMetadata_resultTupleScheme getScheme() {
-        return new getFileServersMetadata_resultTupleScheme();
+    private static class getMetadata_resultTupleSchemeFactory implements SchemeFactory {
+      public getMetadata_resultTupleScheme getScheme() {
+        return new getMetadata_resultTupleScheme();
       }
     }
 
-    private static class getFileServersMetadata_resultTupleScheme extends TupleScheme<getFileServersMetadata_result> {
+    private static class getMetadata_resultTupleScheme extends TupleScheme<getMetadata_result> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, getFileServersMetadata_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, getMetadata_result struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
         if (struct.isSetSuccess()) {
@@ -2011,28 +2020,32 @@ public class CoordinatorEndPoints {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (edu.umn.cs.distributedkeyvaluestore.FileServerMetaData _iter4 : struct.success)
+            for (Map.Entry<edu.umn.cs.distributedkeyvaluestore.FileServerInfo, edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> _iter5 : struct.success.entrySet())
             {
-              _iter4.write(oprot);
+              _iter5.getKey().write(oprot);
+              _iter5.getValue().write(oprot);
             }
           }
         }
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, getFileServersMetadata_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, getMetadata_result struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list5 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-            struct.success = new ArrayList<edu.umn.cs.distributedkeyvaluestore.FileServerMetaData>(_list5.size);
-            edu.umn.cs.distributedkeyvaluestore.FileServerMetaData _elem6;
-            for (int _i7 = 0; _i7 < _list5.size; ++_i7)
+            org.apache.thrift.protocol.TMap _map6 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRUCT, org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+            struct.success = new HashMap<edu.umn.cs.distributedkeyvaluestore.FileServerInfo,edu.umn.cs.distributedkeyvaluestore.FileServerMetaData>(2*_map6.size);
+            edu.umn.cs.distributedkeyvaluestore.FileServerInfo _key7;
+            edu.umn.cs.distributedkeyvaluestore.FileServerMetaData _val8;
+            for (int _i9 = 0; _i9 < _map6.size; ++_i9)
             {
-              _elem6 = new edu.umn.cs.distributedkeyvaluestore.FileServerMetaData();
-              _elem6.read(iprot);
-              struct.success.add(_elem6);
+              _key7 = new edu.umn.cs.distributedkeyvaluestore.FileServerInfo();
+              _key7.read(iprot);
+              _val8 = new edu.umn.cs.distributedkeyvaluestore.FileServerMetaData();
+              _val8.read(iprot);
+              struct.success.put(_key7, _val8);
             }
           }
           struct.setSuccessIsSet(true);
