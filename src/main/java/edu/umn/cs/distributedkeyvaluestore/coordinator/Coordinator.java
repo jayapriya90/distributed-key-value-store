@@ -88,6 +88,13 @@ public class Coordinator {
         CommandLineParser cliParser = new GnuParser();
         try {
             CommandLine cli = cliParser.parse(options, args);
+
+            // print help
+            if (cli.hasOption("h")) {
+                formatter.printHelp("coordinator", options);
+                return;
+            }
+
             int nr = -1;
             int nw = -1;
             if (cli.hasOption("nr")) {

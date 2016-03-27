@@ -27,7 +27,7 @@ struct Response {
 service CoordinatorEndPoints {
      // Used by client
      FileServerResponse getFileServer(),
-     list<shared.FileServerMetaData> getFileServersMetadata(),
+     map<shared.FileServerInfo, shared.FileServerMetaData> getMetadata(),
 
      // Used by fileservers
      void join(1:string hostname, 2:i32 Port),
