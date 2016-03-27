@@ -35,7 +35,7 @@ public class FileServerEndPointsImpl implements FileServerEndPoints.Iface {
     }
 
     private ReadResponse submitReadRequestToCoordinator(String filename) throws TException {
-        TTransport nodeSocket = new TSocket(coordinator.getHostname(), coordinator.getDfsPort());
+        TTransport nodeSocket = new TSocket(coordinator.getHostname(), coordinator.getPort());
         nodeSocket.open();
         TProtocol protocol = new TBinaryProtocol(nodeSocket);
         CoordinatorEndPoints.Client client = new CoordinatorEndPoints.Client(protocol);
@@ -54,7 +54,7 @@ public class FileServerEndPointsImpl implements FileServerEndPoints.Iface {
     }
 
     private WriteResponse submitWriteRequestToCoordinator(String filename, String contents) throws TException {
-        TTransport nodeSocket = new TSocket(coordinator.getHostname(), coordinator.getDfsPort());
+        TTransport nodeSocket = new TSocket(coordinator.getHostname(), coordinator.getPort());
         nodeSocket.open();
         TProtocol protocol = new TBinaryProtocol(nodeSocket);
         CoordinatorEndPoints.Client client = new CoordinatorEndPoints.Client(protocol);

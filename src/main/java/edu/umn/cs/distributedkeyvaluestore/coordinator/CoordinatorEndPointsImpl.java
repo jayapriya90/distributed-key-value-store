@@ -22,12 +22,18 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
     private int nr;
     private int nw;
     private Set<FileServerInfo> servers;
+    private boolean userSpecificedQuorumCount;
 
-    public CoordinatorEndPointsImpl() {
+    public CoordinatorEndPointsImpl(int nr, int nw) {
         this.n = 0;
-        this.nr = 0;
-        this.nw = 0;
+        this.nr = nr;
+        this.nw = nw;
         this.servers = new HashSet<FileServerInfo>();
+        if (nr >= 0 && nw >=0) {
+            this.userSpecificedQuorumCount = true;
+        } else {
+            this.userSpecificedQuorumCount = false;
+        }
     }
 
     @Override
@@ -48,7 +54,7 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
     public List<FileServerMetaData> getFileServersMetadata() throws TException {
         List<FileServerMetaData> result = new ArrayList<FileServerMetaData>();
         for (FileServerInfo server : servers) {
-            TTransport nodeSocket = new TSocket(server.getHostname(), server.getDfsPort());
+            TTransport nodeSocket = new TSocket(server.getHostname(), server.getPort());
             nodeSocket.open();
             TProtocol protocol = new TBinaryProtocol(nodeSocket);
             FileServerEndPoints.Client client = new FileServerEndPoints.Client(protocol);
@@ -69,8 +75,13 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
 
     private void updateQuorum() {
         n = servers.size();
-        nw = (n / 2) + 1;
-        nr = n - nw + 1;
+        if (!userSpecificedQuorumCount) {
+            nw = (n / 2) + 1;
+            nr = n - nw + 1;
+            LOG.info("Updating read and write quorum count..");
+        } else {
+            LOG.info("User has specified read and write quorum count. Not updating quorum.");
+        }
         LOG.info("n: " + n + " nw: " + nw + " nr: " + nr);
     }
 
@@ -113,7 +124,7 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
     }
 
     private ReadResponse getReadResponse(FileServerInfo server, String filename) throws TException {
-        TTransport nodeSocket = new TSocket(server.getHostname(), server.getDfsPort());
+        TTransport nodeSocket = new TSocket(server.getHostname(), server.getPort());
         nodeSocket.open();
         TProtocol protocol = new TBinaryProtocol(nodeSocket);
         FileServerEndPoints.Client client = new FileServerEndPoints.Client(protocol);
@@ -124,7 +135,7 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
     }
 
     private long getVersionFromFileServer(FileServerInfo server, String filename) throws TException {
-        TTransport nodeSocket = new TSocket(server.getHostname(), server.getDfsPort());
+        TTransport nodeSocket = new TSocket(server.getHostname(), server.getPort());
         nodeSocket.open();
         TProtocol protocol = new TBinaryProtocol(nodeSocket);
         FileServerEndPoints.Client client = new FileServerEndPoints.Client(protocol);

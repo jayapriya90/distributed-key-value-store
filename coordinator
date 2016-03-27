@@ -1,0 +1,7 @@
+#!/bin/bash -e
+
+PROJECT_HOME="$PWD"
+PROJECT_CLASSPATH="$PROJECT_HOME/target/*:$PROJECT_HOME/target/lib/*:$PROJECT_HOME/target/classes"
+
+java -cp $PROJECT_CLASSPATH edu.umn.cs.distributedkeyvaluestore.coordinator.Coordinator "$@"
+

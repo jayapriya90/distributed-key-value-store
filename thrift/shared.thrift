@@ -2,7 +2,7 @@ namespace java edu.umn.cs.distributedkeyvaluestore
 
 struct FileServerInfo {
   1: required string hostname,
-  2: required i32 Port;
+  2: required i32 port;
 }
 
 struct FileServerMetaData {
@@ -18,7 +18,7 @@ struct FileInfo {
 enum Status {
     FILE_NOT_FOUND,
     SUCCESS,
-    //NO_NODE_FOUND
+    NO_NODE_FOUND
 }
 struct ReadResponse {
     1: required Status status;
