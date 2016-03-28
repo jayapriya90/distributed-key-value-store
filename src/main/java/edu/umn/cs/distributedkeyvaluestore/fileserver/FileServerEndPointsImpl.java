@@ -2,8 +2,12 @@ package edu.umn.cs.distributedkeyvaluestore.fileserver;
 
 import edu.umn.cs.distributedkeyvaluestore.*;
 import org.apache.thrift.TException;
+import org.apache.thrift.async.TAsyncClientManager;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.protocol.TProtocolFactory;
+import org.apache.thrift.transport.TNonblockingSocket;
+import org.apache.thrift.transport.TNonblockingTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.slf4j.Logger;
@@ -17,13 +21,17 @@ import java.util.Map;
 /**
  * Created by jayapriya on 3/25/16.
  */
-public class FileServerEndPointsImpl implements FileServerEndPoints.Iface {
+public class FileServerEndPointsImpl implements FileServerEndPoints.AsyncIface {
     private static final Logger LOG = LoggerFactory.getLogger(FileServerEndPointsImpl.class);
     private FileServerInfo coordinator;
     private Map<String, String> contentsMap;
     private Map<String, Long> versionMap;
 
-    public FileServerEndPointsImpl(FileServerInfo coordinator) {
+    private String hostname;
+    private int asyncPort;
+    public FileServerEndPointsImpl(String hostname, int asyncPort, FileServerInfo coordinator) {
+        this.hostname = hostname;
+        this.asyncPort = asyncPort;
         this.coordinator = coordinator;
         this.contentsMap = new HashMap<String, String>();
         this.versionMap = new HashMap<String, Long>();
@@ -53,15 +61,19 @@ public class FileServerEndPointsImpl implements FileServerEndPoints.Iface {
         return submitWriteRequestToCoordinator(filename, contents);
     }
 
-    private WriteResponse submitWriteRequestToCoordinator(String filename, String contents) throws TException {
+    private WriteResponse submitWriteRequestToCoordinator(String filename, String contents) throws Exception {
         TTransport nodeSocket = new TSocket(coordinator.getHostname(), coordinator.getPort());
         nodeSocket.open();
-        TProtocol protocol = new TBinaryProtocol(nodeSocket);
-        CoordinatorEndPoints.Client client = new CoordinatorEndPoints.Client(protocol);
+
+        TNonblockingTransport transport = new TNonblockingSocket(hostname, asyncPort);
+        TAsyncClientManager clientManager = new TAsyncClientManager();
+        TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
+        CoordinatorEndPoints.AsyncClient asyncClient = new CoordinatorEndPoints.AsyncClient(protocolFactory, clientManager, transport);
         Request writeRequest = new Request(Type.WRITE, filename);
         writeRequest.setContents(contents);
         LOG.info("Submitting write request for file: " + filename + " to coordinator: " + coordinator);
-        Response response = client.submitRequest(writeRequest);
+        asyncClient.submitRequest(writeRequest, new ResponseCallback());
+        client.submitRequest(writeRequest);
         nodeSocket.close();
         WriteResponse writeResponse = response.getWriteResponse();
         LOG.info("Returning write response: " + writeResponse + " to client");

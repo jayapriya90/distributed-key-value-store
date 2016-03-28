@@ -31,6 +31,5 @@ service CoordinatorEndPoints {
 
      // Used by fileservers
      void join(1:string hostname, 2:i32 Port),
-     shared.FileServerMetaData getFileServerMetadata(),
-     Response submitRequest(1: Request request),
+     void submitRequest(1: Request request),
 }

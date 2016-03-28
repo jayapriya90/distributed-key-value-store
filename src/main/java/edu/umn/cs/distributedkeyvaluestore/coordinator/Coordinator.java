@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 /**
  * usage: coordinator
@@ -43,7 +42,7 @@ public class Coordinator {
         this.coordinatorEndPoints = new CoordinatorEndPointsImpl(nr, nw);
         this.coordinatorServiceProcessor = new CoordinatorEndPoints.Processor(coordinatorEndPoints);
         FileServerInfo coordinator = new FileServerInfo(hostname, Constants.COORDINATOR_PORT);
-        this.fileServerEndPoints = new FileServerEndPointsImpl(coordinator);
+        this.fileServerEndPoints = new FileServerEndPointsImpl(asyncPort, coordinator);
         this.fileServerServiceProcessor = new FileServerEndPoints.Processor(fileServerEndPoints);
     }
 
@@ -121,7 +120,7 @@ public class Coordinator {
 
             // coordinator is also file server, start file server service on different port.
             // both use same hostname
-            FileServer fileServer = new FileServer(coordinatorHost);
+            FileServer fileServer = new FileServer(asyncPort, coordinatorHost);
             final int port = Utilities.getRandomPort();
             String fileServerHost = coordinatorHost;
             fileServer.startService(fileServerHost, port, coordinatorHost);

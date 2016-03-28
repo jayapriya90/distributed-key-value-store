@@ -28,9 +28,9 @@ public class FileServer {
     private FileServerEndPointsImpl fileServerEndPoints;
     private FileServerEndPoints.Processor fileServerServiceProcessor;
 
-    public FileServer(String coordinatorHostname) {
+    public FileServer(String hostname, int asyncPort, String coordinatorHostname) {
         FileServerInfo coordinator = new FileServerInfo(coordinatorHostname, Constants.COORDINATOR_PORT);
-        this.fileServerEndPoints = new FileServerEndPointsImpl(coordinator);
+        this.fileServerEndPoints = new FileServerEndPointsImpl(hostname, asyncPort, coordinator);
         this.fileServerServiceProcessor = new FileServerEndPoints.Processor(fileServerEndPoints);
     }
 
@@ -70,10 +70,11 @@ public class FileServer {
         TTransport socket = null;
         try {
             final int port = Utilities.getRandomPort();
+            final int asyncPort = Utilities.getRandomPort();
             final String hostname = InetAddress.getLocalHost().getHostName();
             final String coordinatorHostname = args.length > 0 ? args[0] : hostname;
 
-            final FileServer fileServer = new FileServer(coordinatorHostname);
+            final FileServer fileServer = new FileServer(hostname, asyncPort, coordinatorHostname);
             // start file server service
             Runnable service = new Runnable() {
                 public void run() {

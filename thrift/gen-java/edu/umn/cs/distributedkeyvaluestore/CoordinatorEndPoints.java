@@ -45,9 +45,7 @@ public class CoordinatorEndPoints {
 
     public void join(String hostname, int Port) throws org.apache.thrift.TException;
 
-    public edu.umn.cs.distributedkeyvaluestore.FileServerMetaData getFileServerMetadata() throws org.apache.thrift.TException;
-
-    public Response submitRequest(Request request) throws org.apache.thrift.TException;
+    public void submitRequest(Request request) throws org.apache.thrift.TException;
 
   }
 
@@ -58,8 +56,6 @@ public class CoordinatorEndPoints {
     public void getMetadata(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
     public void join(String hostname, int Port, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
-
-    public void getFileServerMetadata(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
     public void submitRequest(Request request, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
@@ -150,32 +146,10 @@ public class CoordinatorEndPoints {
       return;
     }
 
-    public edu.umn.cs.distributedkeyvaluestore.FileServerMetaData getFileServerMetadata() throws org.apache.thrift.TException
-    {
-      send_getFileServerMetadata();
-      return recv_getFileServerMetadata();
-    }
-
-    public void send_getFileServerMetadata() throws org.apache.thrift.TException
-    {
-      getFileServerMetadata_args args = new getFileServerMetadata_args();
-      sendBase("getFileServerMetadata", args);
-    }
-
-    public edu.umn.cs.distributedkeyvaluestore.FileServerMetaData recv_getFileServerMetadata() throws org.apache.thrift.TException
-    {
-      getFileServerMetadata_result result = new getFileServerMetadata_result();
-      receiveBase(result, "getFileServerMetadata");
-      if (result.isSetSuccess()) {
-        return result.success;
-      }
-      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getFileServerMetadata failed: unknown result");
-    }
-
-    public Response submitRequest(Request request) throws org.apache.thrift.TException
+    public void submitRequest(Request request) throws org.apache.thrift.TException
     {
       send_submitRequest(request);
-      return recv_submitRequest();
+      recv_submitRequest();
     }
 
     public void send_submitRequest(Request request) throws org.apache.thrift.TException
@@ -185,14 +159,11 @@ public class CoordinatorEndPoints {
       sendBase("submitRequest", args);
     }
 
-    public Response recv_submitRequest() throws org.apache.thrift.TException
+    public void recv_submitRequest() throws org.apache.thrift.TException
     {
       submitRequest_result result = new submitRequest_result();
       receiveBase(result, "submitRequest");
-      if (result.isSetSuccess()) {
-        return result.success;
-      }
-      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "submitRequest failed: unknown result");
+      return;
     }
 
   }
@@ -306,35 +277,6 @@ public class CoordinatorEndPoints {
       }
     }
 
-    public void getFileServerMetadata(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
-      checkReady();
-      getFileServerMetadata_call method_call = new getFileServerMetadata_call(resultHandler, this, ___protocolFactory, ___transport);
-      this.___currentMethod = method_call;
-      ___manager.call(method_call);
-    }
-
-    public static class getFileServerMetadata_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public getFileServerMetadata_call(org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
-        super(client, protocolFactory, transport, resultHandler, false);
-      }
-
-      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getFileServerMetadata", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        getFileServerMetadata_args args = new getFileServerMetadata_args();
-        args.write(prot);
-        prot.writeMessageEnd();
-      }
-
-      public edu.umn.cs.distributedkeyvaluestore.FileServerMetaData getResult() throws org.apache.thrift.TException {
-        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
-          throw new IllegalStateException("Method call not finished!");
-        }
-        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
-        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        return (new Client(prot)).recv_getFileServerMetadata();
-      }
-    }
-
     public void submitRequest(Request request, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
       submitRequest_call method_call = new submitRequest_call(request, resultHandler, this, ___protocolFactory, ___transport);
@@ -357,13 +299,13 @@ public class CoordinatorEndPoints {
         prot.writeMessageEnd();
       }
 
-      public Response getResult() throws org.apache.thrift.TException {
+      public void getResult() throws org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        return (new Client(prot)).recv_submitRequest();
+        (new Client(prot)).recv_submitRequest();
       }
     }
 
@@ -383,7 +325,6 @@ public class CoordinatorEndPoints {
       processMap.put("getFileServer", new getFileServer());
       processMap.put("getMetadata", new getMetadata());
       processMap.put("join", new join());
-      processMap.put("getFileServerMetadata", new getFileServerMetadata());
       processMap.put("submitRequest", new submitRequest());
       return processMap;
     }
@@ -448,26 +389,6 @@ public class CoordinatorEndPoints {
       }
     }
 
-    public static class getFileServerMetadata<I extends Iface> extends org.apache.thrift.ProcessFunction<I, getFileServerMetadata_args> {
-      public getFileServerMetadata() {
-        super("getFileServerMetadata");
-      }
-
-      public getFileServerMetadata_args getEmptyArgsInstance() {
-        return new getFileServerMetadata_args();
-      }
-
-      protected boolean isOneway() {
-        return false;
-      }
-
-      public getFileServerMetadata_result getResult(I iface, getFileServerMetadata_args args) throws org.apache.thrift.TException {
-        getFileServerMetadata_result result = new getFileServerMetadata_result();
-        result.success = iface.getFileServerMetadata();
-        return result;
-      }
-    }
-
     public static class submitRequest<I extends Iface> extends org.apache.thrift.ProcessFunction<I, submitRequest_args> {
       public submitRequest() {
         super("submitRequest");
@@ -483,7 +404,7 @@ public class CoordinatorEndPoints {
 
       public submitRequest_result getResult(I iface, submitRequest_args args) throws org.apache.thrift.TException {
         submitRequest_result result = new submitRequest_result();
-        result.success = iface.submitRequest(args.request);
+        iface.submitRequest(args.request);
         return result;
       }
     }
@@ -504,7 +425,6 @@ public class CoordinatorEndPoints {
       processMap.put("getFileServer", new getFileServer());
       processMap.put("getMetadata", new getMetadata());
       processMap.put("join", new join());
-      processMap.put("getFileServerMetadata", new getFileServerMetadata());
       processMap.put("submitRequest", new submitRequest());
       return processMap;
     }
@@ -661,58 +581,7 @@ public class CoordinatorEndPoints {
       }
     }
 
-    public static class getFileServerMetadata<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, getFileServerMetadata_args, edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> {
-      public getFileServerMetadata() {
-        super("getFileServerMetadata");
-      }
-
-      public getFileServerMetadata_args getEmptyArgsInstance() {
-        return new getFileServerMetadata_args();
-      }
-
-      public AsyncMethodCallback<edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
-        final org.apache.thrift.AsyncProcessFunction fcall = this;
-        return new AsyncMethodCallback<edu.umn.cs.distributedkeyvaluestore.FileServerMetaData>() { 
-          public void onComplete(edu.umn.cs.distributedkeyvaluestore.FileServerMetaData o) {
-            getFileServerMetadata_result result = new getFileServerMetadata_result();
-            result.success = o;
-            try {
-              fcall.sendResponse(fb,result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
-              return;
-            } catch (Exception e) {
-              LOGGER.error("Exception writing to internal frame buffer", e);
-            }
-            fb.close();
-          }
-          public void onError(Exception e) {
-            byte msgType = org.apache.thrift.protocol.TMessageType.REPLY;
-            org.apache.thrift.TBase msg;
-            getFileServerMetadata_result result = new getFileServerMetadata_result();
-            {
-              msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
-              msg = (org.apache.thrift.TBase)new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
-            }
-            try {
-              fcall.sendResponse(fb,msg,msgType,seqid);
-              return;
-            } catch (Exception ex) {
-              LOGGER.error("Exception writing to internal frame buffer", ex);
-            }
-            fb.close();
-          }
-        };
-      }
-
-      protected boolean isOneway() {
-        return false;
-      }
-
-      public void start(I iface, getFileServerMetadata_args args, org.apache.thrift.async.AsyncMethodCallback<edu.umn.cs.distributedkeyvaluestore.FileServerMetaData> resultHandler) throws TException {
-        iface.getFileServerMetadata(resultHandler);
-      }
-    }
-
-    public static class submitRequest<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, submitRequest_args, Response> {
+    public static class submitRequest<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, submitRequest_args, Void> {
       public submitRequest() {
         super("submitRequest");
       }
@@ -721,12 +590,11 @@ public class CoordinatorEndPoints {
         return new submitRequest_args();
       }
 
-      public AsyncMethodCallback<Response> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
+      public AsyncMethodCallback<Void> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
         final org.apache.thrift.AsyncProcessFunction fcall = this;
-        return new AsyncMethodCallback<Response>() { 
-          public void onComplete(Response o) {
+        return new AsyncMethodCallback<Void>() { 
+          public void onComplete(Void o) {
             submitRequest_result result = new submitRequest_result();
-            result.success = o;
             try {
               fcall.sendResponse(fb,result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
               return;
@@ -758,7 +626,7 @@ public class CoordinatorEndPoints {
         return false;
       }
 
-      public void start(I iface, submitRequest_args args, org.apache.thrift.async.AsyncMethodCallback<Response> resultHandler) throws TException {
+      public void start(I iface, submitRequest_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
         iface.submitRequest(args.request,resultHandler);
       }
     }
@@ -2767,620 +2635,6 @@ public class CoordinatorEndPoints {
 
   }
 
-  public static class getFileServerMetadata_args implements org.apache.thrift.TBase<getFileServerMetadata_args, getFileServerMetadata_args._Fields>, java.io.Serializable, Cloneable, Comparable<getFileServerMetadata_args>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getFileServerMetadata_args");
-
-
-    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
-    static {
-      schemes.put(StandardScheme.class, new getFileServerMetadata_argsStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new getFileServerMetadata_argsTupleSchemeFactory());
-    }
-
-
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-;
-
-      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
-
-      static {
-        for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byName.put(field.getFieldName(), field);
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, or null if its not found.
-       */
-      public static _Fields findByThriftId(int fieldId) {
-        switch(fieldId) {
-          default:
-            return null;
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, throwing an exception
-       * if it is not found.
-       */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
-        _Fields fields = findByThriftId(fieldId);
-        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-        return fields;
-      }
-
-      /**
-       * Find the _Fields constant that matches name, or null if its not found.
-       */
-      public static _Fields findByName(String name) {
-        return byName.get(name);
-      }
-
-      private final short _thriftId;
-      private final String _fieldName;
-
-      _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
-      }
-
-      public short getThriftFieldId() {
-        return _thriftId;
-      }
-
-      public String getFieldName() {
-        return _fieldName;
-      }
-    }
-    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
-    static {
-      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getFileServerMetadata_args.class, metaDataMap);
-    }
-
-    public getFileServerMetadata_args() {
-    }
-
-    /**
-     * Performs a deep copy on <i>other</i>.
-     */
-    public getFileServerMetadata_args(getFileServerMetadata_args other) {
-    }
-
-    public getFileServerMetadata_args deepCopy() {
-      return new getFileServerMetadata_args(this);
-    }
-
-    @Override
-    public void clear() {
-    }
-
-    public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-      }
-    }
-
-    public Object getFieldValue(_Fields field) {
-      switch (field) {
-      }
-      throw new IllegalStateException();
-    }
-
-    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
-    public boolean isSet(_Fields field) {
-      if (field == null) {
-        throw new IllegalArgumentException();
-      }
-
-      switch (field) {
-      }
-      throw new IllegalStateException();
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == null)
-        return false;
-      if (that instanceof getFileServerMetadata_args)
-        return this.equals((getFileServerMetadata_args)that);
-      return false;
-    }
-
-    public boolean equals(getFileServerMetadata_args that) {
-      if (that == null)
-        return false;
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      List<Object> list = new ArrayList<Object>();
-
-      return list.hashCode();
-    }
-
-    @Override
-    public int compareTo(getFileServerMetadata_args other) {
-      if (!getClass().equals(other.getClass())) {
-        return getClass().getName().compareTo(other.getClass().getName());
-      }
-
-      int lastComparison = 0;
-
-      return 0;
-    }
-
-    public _Fields fieldForId(int fieldId) {
-      return _Fields.findByThriftId(fieldId);
-    }
-
-    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
-      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
-    }
-
-    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
-      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder("getFileServerMetadata_args(");
-      boolean first = true;
-
-      sb.append(")");
-      return sb.toString();
-    }
-
-    public void validate() throws org.apache.thrift.TException {
-      // check for required fields
-      // check for sub-struct validity
-    }
-
-    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
-      try {
-        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
-      try {
-        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private static class getFileServerMetadata_argsStandardSchemeFactory implements SchemeFactory {
-      public getFileServerMetadata_argsStandardScheme getScheme() {
-        return new getFileServerMetadata_argsStandardScheme();
-      }
-    }
-
-    private static class getFileServerMetadata_argsStandardScheme extends StandardScheme<getFileServerMetadata_args> {
-
-      public void read(org.apache.thrift.protocol.TProtocol iprot, getFileServerMetadata_args struct) throws org.apache.thrift.TException {
-        org.apache.thrift.protocol.TField schemeField;
-        iprot.readStructBegin();
-        while (true)
-        {
-          schemeField = iprot.readFieldBegin();
-          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
-            break;
-          }
-          switch (schemeField.id) {
-            default:
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-          }
-          iprot.readFieldEnd();
-        }
-        iprot.readStructEnd();
-
-        // check for required fields of primitive type, which can't be checked in the validate method
-        struct.validate();
-      }
-
-      public void write(org.apache.thrift.protocol.TProtocol oprot, getFileServerMetadata_args struct) throws org.apache.thrift.TException {
-        struct.validate();
-
-        oprot.writeStructBegin(STRUCT_DESC);
-        oprot.writeFieldStop();
-        oprot.writeStructEnd();
-      }
-
-    }
-
-    private static class getFileServerMetadata_argsTupleSchemeFactory implements SchemeFactory {
-      public getFileServerMetadata_argsTupleScheme getScheme() {
-        return new getFileServerMetadata_argsTupleScheme();
-      }
-    }
-
-    private static class getFileServerMetadata_argsTupleScheme extends TupleScheme<getFileServerMetadata_args> {
-
-      @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, getFileServerMetadata_args struct) throws org.apache.thrift.TException {
-        TTupleProtocol oprot = (TTupleProtocol) prot;
-      }
-
-      @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, getFileServerMetadata_args struct) throws org.apache.thrift.TException {
-        TTupleProtocol iprot = (TTupleProtocol) prot;
-      }
-    }
-
-  }
-
-  public static class getFileServerMetadata_result implements org.apache.thrift.TBase<getFileServerMetadata_result, getFileServerMetadata_result._Fields>, java.io.Serializable, Cloneable, Comparable<getFileServerMetadata_result>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getFileServerMetadata_result");
-
-    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.STRUCT, (short)0);
-
-    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
-    static {
-      schemes.put(StandardScheme.class, new getFileServerMetadata_resultStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new getFileServerMetadata_resultTupleSchemeFactory());
-    }
-
-    public edu.umn.cs.distributedkeyvaluestore.FileServerMetaData success; // required
-
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      SUCCESS((short)0, "success");
-
-      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
-
-      static {
-        for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byName.put(field.getFieldName(), field);
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, or null if its not found.
-       */
-      public static _Fields findByThriftId(int fieldId) {
-        switch(fieldId) {
-          case 0: // SUCCESS
-            return SUCCESS;
-          default:
-            return null;
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, throwing an exception
-       * if it is not found.
-       */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
-        _Fields fields = findByThriftId(fieldId);
-        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-        return fields;
-      }
-
-      /**
-       * Find the _Fields constant that matches name, or null if its not found.
-       */
-      public static _Fields findByName(String name) {
-        return byName.get(name);
-      }
-
-      private final short _thriftId;
-      private final String _fieldName;
-
-      _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
-      }
-
-      public short getThriftFieldId() {
-        return _thriftId;
-      }
-
-      public String getFieldName() {
-        return _fieldName;
-      }
-    }
-
-    // isset id assignments
-    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
-    static {
-      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, edu.umn.cs.distributedkeyvaluestore.FileServerMetaData.class)));
-      metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getFileServerMetadata_result.class, metaDataMap);
-    }
-
-    public getFileServerMetadata_result() {
-    }
-
-    public getFileServerMetadata_result(
-      edu.umn.cs.distributedkeyvaluestore.FileServerMetaData success)
-    {
-      this();
-      this.success = success;
-    }
-
-    /**
-     * Performs a deep copy on <i>other</i>.
-     */
-    public getFileServerMetadata_result(getFileServerMetadata_result other) {
-      if (other.isSetSuccess()) {
-        this.success = new edu.umn.cs.distributedkeyvaluestore.FileServerMetaData(other.success);
-      }
-    }
-
-    public getFileServerMetadata_result deepCopy() {
-      return new getFileServerMetadata_result(this);
-    }
-
-    @Override
-    public void clear() {
-      this.success = null;
-    }
-
-    public edu.umn.cs.distributedkeyvaluestore.FileServerMetaData getSuccess() {
-      return this.success;
-    }
-
-    public getFileServerMetadata_result setSuccess(edu.umn.cs.distributedkeyvaluestore.FileServerMetaData success) {
-      this.success = success;
-      return this;
-    }
-
-    public void unsetSuccess() {
-      this.success = null;
-    }
-
-    /** Returns true if field success is set (has been assigned a value) and false otherwise */
-    public boolean isSetSuccess() {
-      return this.success != null;
-    }
-
-    public void setSuccessIsSet(boolean value) {
-      if (!value) {
-        this.success = null;
-      }
-    }
-
-    public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-      case SUCCESS:
-        if (value == null) {
-          unsetSuccess();
-        } else {
-          setSuccess((edu.umn.cs.distributedkeyvaluestore.FileServerMetaData)value);
-        }
-        break;
-
-      }
-    }
-
-    public Object getFieldValue(_Fields field) {
-      switch (field) {
-      case SUCCESS:
-        return getSuccess();
-
-      }
-      throw new IllegalStateException();
-    }
-
-    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
-    public boolean isSet(_Fields field) {
-      if (field == null) {
-        throw new IllegalArgumentException();
-      }
-
-      switch (field) {
-      case SUCCESS:
-        return isSetSuccess();
-      }
-      throw new IllegalStateException();
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == null)
-        return false;
-      if (that instanceof getFileServerMetadata_result)
-        return this.equals((getFileServerMetadata_result)that);
-      return false;
-    }
-
-    public boolean equals(getFileServerMetadata_result that) {
-      if (that == null)
-        return false;
-
-      boolean this_present_success = true && this.isSetSuccess();
-      boolean that_present_success = true && that.isSetSuccess();
-      if (this_present_success || that_present_success) {
-        if (!(this_present_success && that_present_success))
-          return false;
-        if (!this.success.equals(that.success))
-          return false;
-      }
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      List<Object> list = new ArrayList<Object>();
-
-      boolean present_success = true && (isSetSuccess());
-      list.add(present_success);
-      if (present_success)
-        list.add(success);
-
-      return list.hashCode();
-    }
-
-    @Override
-    public int compareTo(getFileServerMetadata_result other) {
-      if (!getClass().equals(other.getClass())) {
-        return getClass().getName().compareTo(other.getClass().getName());
-      }
-
-      int lastComparison = 0;
-
-      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(other.isSetSuccess());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetSuccess()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, other.success);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      return 0;
-    }
-
-    public _Fields fieldForId(int fieldId) {
-      return _Fields.findByThriftId(fieldId);
-    }
-
-    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
-      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
-    }
-
-    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
-      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
-      }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder("getFileServerMetadata_result(");
-      boolean first = true;
-
-      sb.append("success:");
-      if (this.success == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.success);
-      }
-      first = false;
-      sb.append(")");
-      return sb.toString();
-    }
-
-    public void validate() throws org.apache.thrift.TException {
-      // check for required fields
-      // check for sub-struct validity
-      if (success != null) {
-        success.validate();
-      }
-    }
-
-    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
-      try {
-        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
-      try {
-        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private static class getFileServerMetadata_resultStandardSchemeFactory implements SchemeFactory {
-      public getFileServerMetadata_resultStandardScheme getScheme() {
-        return new getFileServerMetadata_resultStandardScheme();
-      }
-    }
-
-    private static class getFileServerMetadata_resultStandardScheme extends StandardScheme<getFileServerMetadata_result> {
-
-      public void read(org.apache.thrift.protocol.TProtocol iprot, getFileServerMetadata_result struct) throws org.apache.thrift.TException {
-        org.apache.thrift.protocol.TField schemeField;
-        iprot.readStructBegin();
-        while (true)
-        {
-          schemeField = iprot.readFieldBegin();
-          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
-            break;
-          }
-          switch (schemeField.id) {
-            case 0: // SUCCESS
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-                struct.success = new edu.umn.cs.distributedkeyvaluestore.FileServerMetaData();
-                struct.success.read(iprot);
-                struct.setSuccessIsSet(true);
-              } else { 
-                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-              }
-              break;
-            default:
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-          }
-          iprot.readFieldEnd();
-        }
-        iprot.readStructEnd();
-
-        // check for required fields of primitive type, which can't be checked in the validate method
-        struct.validate();
-      }
-
-      public void write(org.apache.thrift.protocol.TProtocol oprot, getFileServerMetadata_result struct) throws org.apache.thrift.TException {
-        struct.validate();
-
-        oprot.writeStructBegin(STRUCT_DESC);
-        if (struct.success != null) {
-          oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-          struct.success.write(oprot);
-          oprot.writeFieldEnd();
-        }
-        oprot.writeFieldStop();
-        oprot.writeStructEnd();
-      }
-
-    }
-
-    private static class getFileServerMetadata_resultTupleSchemeFactory implements SchemeFactory {
-      public getFileServerMetadata_resultTupleScheme getScheme() {
-        return new getFileServerMetadata_resultTupleScheme();
-      }
-    }
-
-    private static class getFileServerMetadata_resultTupleScheme extends TupleScheme<getFileServerMetadata_result> {
-
-      @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, getFileServerMetadata_result struct) throws org.apache.thrift.TException {
-        TTupleProtocol oprot = (TTupleProtocol) prot;
-        BitSet optionals = new BitSet();
-        if (struct.isSetSuccess()) {
-          optionals.set(0);
-        }
-        oprot.writeBitSet(optionals, 1);
-        if (struct.isSetSuccess()) {
-          struct.success.write(oprot);
-        }
-      }
-
-      @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, getFileServerMetadata_result struct) throws org.apache.thrift.TException {
-        TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(1);
-        if (incoming.get(0)) {
-          struct.success = new edu.umn.cs.distributedkeyvaluestore.FileServerMetaData();
-          struct.success.read(iprot);
-          struct.setSuccessIsSet(true);
-        }
-      }
-    }
-
-  }
-
   public static class submitRequest_args implements org.apache.thrift.TBase<submitRequest_args, submitRequest_args._Fields>, java.io.Serializable, Cloneable, Comparable<submitRequest_args>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("submitRequest_args");
 
@@ -3750,7 +3004,6 @@ public class CoordinatorEndPoints {
   public static class submitRequest_result implements org.apache.thrift.TBase<submitRequest_result, submitRequest_result._Fields>, java.io.Serializable, Cloneable, Comparable<submitRequest_result>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("submitRequest_result");
 
-    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.STRUCT, (short)0);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -3758,11 +3011,10 @@ public class CoordinatorEndPoints {
       schemes.put(TupleScheme.class, new submitRequest_resultTupleSchemeFactory());
     }
 
-    public Response success; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      SUCCESS((short)0, "success");
+;
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -3777,8 +3029,6 @@ public class CoordinatorEndPoints {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 0: // SUCCESS
-            return SUCCESS;
           default:
             return null;
         }
@@ -3817,13 +3067,9 @@ public class CoordinatorEndPoints {
         return _fieldName;
       }
     }
-
-    // isset id assignments
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Response.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(submitRequest_result.class, metaDataMap);
     }
@@ -3831,20 +3077,10 @@ public class CoordinatorEndPoints {
     public submitRequest_result() {
     }
 
-    public submitRequest_result(
-      Response success)
-    {
-      this();
-      this.success = success;
-    }
-
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public submitRequest_result(submitRequest_result other) {
-      if (other.isSetSuccess()) {
-        this.success = new Response(other.success);
-      }
     }
 
     public submitRequest_result deepCopy() {
@@ -3853,51 +3089,15 @@ public class CoordinatorEndPoints {
 
     @Override
     public void clear() {
-      this.success = null;
-    }
-
-    public Response getSuccess() {
-      return this.success;
-    }
-
-    public submitRequest_result setSuccess(Response success) {
-      this.success = success;
-      return this;
-    }
-
-    public void unsetSuccess() {
-      this.success = null;
-    }
-
-    /** Returns true if field success is set (has been assigned a value) and false otherwise */
-    public boolean isSetSuccess() {
-      return this.success != null;
-    }
-
-    public void setSuccessIsSet(boolean value) {
-      if (!value) {
-        this.success = null;
-      }
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case SUCCESS:
-        if (value == null) {
-          unsetSuccess();
-        } else {
-          setSuccess((Response)value);
-        }
-        break;
-
       }
     }
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case SUCCESS:
-        return getSuccess();
-
       }
       throw new IllegalStateException();
     }
@@ -3909,8 +3109,6 @@ public class CoordinatorEndPoints {
       }
 
       switch (field) {
-      case SUCCESS:
-        return isSetSuccess();
       }
       throw new IllegalStateException();
     }
@@ -3928,26 +3126,12 @@ public class CoordinatorEndPoints {
       if (that == null)
         return false;
 
-      boolean this_present_success = true && this.isSetSuccess();
-      boolean that_present_success = true && that.isSetSuccess();
-      if (this_present_success || that_present_success) {
-        if (!(this_present_success && that_present_success))
-          return false;
-        if (!this.success.equals(that.success))
-          return false;
-      }
-
       return true;
     }
 
     @Override
     public int hashCode() {
       List<Object> list = new ArrayList<Object>();
-
-      boolean present_success = true && (isSetSuccess());
-      list.add(present_success);
-      if (present_success)
-        list.add(success);
 
       return list.hashCode();
     }
@@ -3960,16 +3144,6 @@ public class CoordinatorEndPoints {
 
       int lastComparison = 0;
 
-      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(other.isSetSuccess());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetSuccess()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, other.success);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
       return 0;
     }
 
@@ -3990,13 +3164,6 @@ public class CoordinatorEndPoints {
       StringBuilder sb = new StringBuilder("submitRequest_result(");
       boolean first = true;
 
-      sb.append("success:");
-      if (this.success == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.success);
-      }
-      first = false;
       sb.append(")");
       return sb.toString();
     }
@@ -4004,9 +3171,6 @@ public class CoordinatorEndPoints {
     public void validate() throws org.apache.thrift.TException {
       // check for required fields
       // check for sub-struct validity
-      if (success != null) {
-        success.validate();
-      }
     }
 
     private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -4043,15 +3207,6 @@ public class CoordinatorEndPoints {
             break;
           }
           switch (schemeField.id) {
-            case 0: // SUCCESS
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-                struct.success = new Response();
-                struct.success.read(iprot);
-                struct.setSuccessIsSet(true);
-              } else { 
-                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-              }
-              break;
             default:
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
           }
@@ -4067,11 +3222,6 @@ public class CoordinatorEndPoints {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
-        if (struct.success != null) {
-          oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-          struct.success.write(oprot);
-          oprot.writeFieldEnd();
-        }
         oprot.writeFieldStop();
         oprot.writeStructEnd();
       }
@@ -4089,25 +3239,11 @@ public class CoordinatorEndPoints {
       @Override
       public void write(org.apache.thrift.protocol.TProtocol prot, submitRequest_result struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
-        BitSet optionals = new BitSet();
-        if (struct.isSetSuccess()) {
-          optionals.set(0);
-        }
-        oprot.writeBitSet(optionals, 1);
-        if (struct.isSetSuccess()) {
-          struct.success.write(oprot);
-        }
       }
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, submitRequest_result struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(1);
-        if (incoming.get(0)) {
-          struct.success = new Response();
-          struct.success.read(iprot);
-          struct.setSuccessIsSet(true);
-        }
       }
     }
 

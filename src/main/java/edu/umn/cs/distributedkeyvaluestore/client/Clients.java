@@ -2,18 +2,22 @@ package edu.umn.cs.distributedkeyvaluestore.client;
 
 import edu.umn.cs.distributedkeyvaluestore.*;
 import edu.umn.cs.distributedkeyvaluestore.common.Constants;
-import edu.umn.cs.distributedkeyvaluestore.fileserver.FileServer;
+import edu.umn.cs.distributedkeyvaluestore.common.Utilities;
 import org.apache.commons.cli.*;
 import org.apache.thrift.TException;
+import org.apache.thrift.async.TAsyncClientManager;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TSocket;
-import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.protocol.TProtocolFactory;
+import org.apache.thrift.transport.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -125,34 +129,19 @@ public class Clients {
                 LOG.info("Requests: " + input);
             }
 
-            List<Future<?>> futures = new ArrayList<Future<?>>();
+            final int asyncPort = Utilities.getRandomPort();
+            final String hostname = InetAddress.getLocalHost().getHostName();
+
             for (String request : input) {
                 FileServerInfo randomServer = getRandomServerFromCoordinator(coordinatorHost);
-                RequestThread callable = new RequestThread(request, randomServer);
-                Future<?> futureResponse = executorService.submit(callable);
-                futures.add(futureResponse);
+                RequestThread runnable = new RequestThread(hostname, asyncPort, request, randomServer);
+                executorService.execute(runnable);
             }
 
-            for (int i = 0; i < futures.size(); i++) {
-                try {
-                    String request = input.get(i);
-                    Object response = futures.get(i).get();
-                    if (response instanceof ReadResponse) {
-                        ReadResponse readResponse = (ReadResponse) response;
-                        LOG.info("Got read response: " + readResponse + " for request: " + request);
-                    }
-
-                    if (response instanceof WriteResponse) {
-                        WriteResponse writeResponse = (WriteResponse) response;
-                        LOG.info("Got write response: " + writeResponse + " for request: " + request);
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
-            }
-
+            LOG.info("Waiting for 20 seconds before all callbacks return..");
+            executorService.shutdown();
+            // wait 20 seconds until all submitted tasks are completed
+            executorService.awaitTermination(20, TimeUnit.SECONDS);
             executorService.shutdownNow();
 
             if (cli.hasOption("p")) {
@@ -165,6 +154,12 @@ public class Clients {
             System.err.println("Invalid option.");
             formatter.printHelp("clients", options);
         } catch (TException e) {
+            e.printStackTrace();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -239,37 +234,59 @@ public class Clients {
         return input;
     }
 
-    private static class RequestThread implements Callable<Object> {
+    private static class ResponseWithTime {
+        long executionTime;
+        Object response;
+
+        public ResponseWithTime(long execTime, Object response) {
+            this.executionTime = execTime;
+            this.response = response;
+        }
+    }
+
+    private static class RequestThread implements Runnable {
 
         private String requestString;
         private FileServerInfo server;
+        private String hostname;
+        private int asyncPort;
 
-        public RequestThread(String request, FileServerInfo fileServerInfo) {
+        public RequestThread(String hostname, int asyncPort, String request, FileServerInfo fileServerInfo) {
             this.requestString = request;
             this.server = fileServerInfo;
+            this.hostname = hostname;
+            this.asyncPort = asyncPort;
         }
 
         @Override
-        public Object call() throws Exception {
+        public void run() {
+            long start = System.currentTimeMillis();
             TTransport nodeSocket = new TSocket(server.getHostname(), server.getPort());
             try {
                 nodeSocket.open();
                 TProtocol protocol = new TBinaryProtocol(nodeSocket);
-                FileServerEndPoints.Client client = new FileServerEndPoints.Client(protocol);
+                TNonblockingTransport transport = new TNonblockingSocket(hostname, asyncPort);
+                TAsyncClientManager clientManager = new TAsyncClientManager();
+                TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
+                FileServerEndPoints.AsyncClient asyncClient = new FileServerEndPoints.AsyncClient(protocolFactory, clientManager, transport);
                 if (requestString.contains("=")) {
                     // write request
                     String[] tokens = requestString.split("=");
                     String filename = tokens[0];
                     String contents = tokens[1];
                     LOG.info("Sending write request (filename: " + filename + " contents: " + contents + ") to " + server);
-                    WriteResponse writeResponse = client.write(filename, contents);
-                    return writeResponse;
+                    asyncClient.write(filename, contents, new WriterResponseCallback(filename, contents, start));
                 } else {
                     // read request
                     LOG.info("Sending read request (filename: " + requestString + ") to " + server);
-                    ReadResponse readResponse = client.read(requestString);
-                    return readResponse;
+                    asyncClient.read(requestString, new ReadResponseCallback(requestString, start));
                 }
+            } catch (TTransportException e) {
+                e.printStackTrace();
+            } catch (TException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
             } finally {
                 if (nodeSocket != null) {
                     nodeSocket.close();
