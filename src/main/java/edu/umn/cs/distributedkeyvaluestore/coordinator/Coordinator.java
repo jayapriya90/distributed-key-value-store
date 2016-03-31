@@ -93,7 +93,7 @@ public class Coordinator {
             }
 
             String coordinatorHost = InetAddress.getLocalHost().getHostName();
-            LOG.info("Starting coordinator with hostname: " + coordinatorHost + " syncInterval: " + syncInterval + "ms");
+            LOG.info("Starting coordinator with hostname: " + coordinatorHost + " syncInterval: " + syncInterval + " ms");
             final Coordinator coordinator = new Coordinator(nr, nw, syncInterval);
 
             // start the services offered by coordinator in separate thread

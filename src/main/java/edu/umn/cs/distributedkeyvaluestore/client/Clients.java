@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -134,28 +136,43 @@ public class Clients {
                 futures.add(futureResponse);
             }
 
+            // write request and execution time as CSV file so that its easy for plotting
+            File output = new File("output.txt");
+            FileWriter fileWriter = new FileWriter(output, false);
+
             for (int i = 0; i < futures.size(); i++) {
                 try {
                     String request = input.get(i);
                     ResponseWithTime responseWithTime = futures.get(i).get();
                     long execTime = responseWithTime.executionTime;
                     Object response = responseWithTime.response;
+                    String csvString = "";
                     if (response instanceof ReadResponse) {
                         ReadResponse readResponse = (ReadResponse) response;
                         LOG.info("Got read response: " + readResponse + " for request: " + request
                                 + " in " + execTime + " ms");
+                        csvString = "R," + request + "," + execTime + "\n";
                     }
 
                     if (response instanceof WriteResponse) {
                         WriteResponse writeResponse = (WriteResponse) response;
                         LOG.info("Got write response: " + writeResponse + " for request: " + request
                                 + " in " + execTime + " ms");
+                        csvString = "W," + request + "," + execTime + "\n";
+                    }
+
+                    if (fileWriter != null) {
+                        fileWriter.write(csvString);
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 }
+            }
+
+            if (fileWriter != null) {
+                fileWriter.close();
             }
 
             executorService.shutdownNow();
@@ -171,6 +188,8 @@ public class Clients {
             formatter.printHelp("clients", options);
         } catch (TException e) {
             e.printStackTrace();
+        } catch (IOException e) {
+            // in case of exception ignore as this file is just for convenience
         }
     }
 
