@@ -40,6 +40,7 @@ public class SyncTimerTask extends TimerTask {
             // we need to know the list of files before initiating the sync operation.
             // We can get the list of files from any node.
             List<String> filenames = getAllFilenames(servers.iterator().next());
+            boolean anyOutOfSync = false;
             for (String filename : filenames) {
                 long latestVersion = Long.MIN_VALUE;
                 FileServerInfo maxVersionServer = null;
@@ -67,10 +68,16 @@ public class SyncTimerTask extends TimerTask {
 
                 // send message to out-of-sync servers to update contents
                 for (FileServerInfo fileServerInfo : outOfSyncServers) {
+                    anyOutOfSync = true;
                     sendUpdateContents(fileServerInfo, filename, latestContents, latestVersion);
                 }
             }
-            LOG.info("Successfully synced all files to its latest version!");
+
+            if (anyOutOfSync) {
+                LOG.info("Successfully synced all files to its latest version!");
+            } else {
+                LOG.info("All file servers are up-to-date! Nothing to sync.");
+            }
         } catch (TException e) {
             e.printStackTrace();
         }

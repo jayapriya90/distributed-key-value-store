@@ -89,7 +89,6 @@ public class FileServerEndPointsImpl implements FileServerEndPoints.Iface {
                 fileInfos.add(new FileInfo(filename, version, contents));
             }
             FileServerMetaData fileServerMetaData = new FileServerMetaData(fileInfos);
-            LOG.info("Returning file server metadata: " + fileServerMetaData);
             return fileServerMetaData;
         } finally {
             readLock.unlock();
@@ -109,7 +108,6 @@ public class FileServerEndPointsImpl implements FileServerEndPoints.Iface {
             ReadResponse readResponse = new ReadResponse(Status.SUCCESS);
             readResponse.setContents(contentsMap.get(filename));
             readResponse.setVersion(versionMap.get(filename));
-            LOG.info("Sending read response: " + readResponse + " for file: " + filename);
             return readResponse;
         } finally {
             readLock.unlock();
@@ -127,7 +125,6 @@ public class FileServerEndPointsImpl implements FileServerEndPoints.Iface {
                 updatedVersion = versionMap.get(filename) + 1; // increment the already existing version here
             }
             versionMap.put(filename, updatedVersion);
-            LOG.info("Wrote contents: " + contents + " to file: " + filename + " with version: " + updatedVersion);
             WriteResponse writeResponse = new WriteResponse(Status.SUCCESS);
             writeResponse.setBytesWritten(contents.length());
             writeResponse.setVersion(updatedVersion);
@@ -180,10 +177,7 @@ public class FileServerEndPointsImpl implements FileServerEndPoints.Iface {
                 LOG.info(filename + " not found! Return version: -1");
                 return -1;
             }
-
-            long version = versionMap.get(filename);
-            LOG.info("Returning version: " + version + " for file: " + filename);
-            return version;
+            return versionMap.get(filename);
         } finally {
             readLock.unlock();
         }
