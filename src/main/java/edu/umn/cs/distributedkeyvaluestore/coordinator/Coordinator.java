@@ -35,16 +35,9 @@ public class Coordinator {
     private CoordinatorEndPointsImpl coordinatorEndPoints;
     private CoordinatorEndPoints.Processor coordinatorServiceProcessor;
 
-    // coordinator also acts as fileserver
-    private FileServerEndPointsImpl fileServerEndPoints;
-    private FileServerEndPoints.Processor fileServerServiceProcessor;
-
-    public Coordinator(int nr, int nw, String hostname) {
+    public Coordinator(int nr, int nw) {
         this.coordinatorEndPoints = new CoordinatorEndPointsImpl(nr, nw);
         this.coordinatorServiceProcessor = new CoordinatorEndPoints.Processor(coordinatorEndPoints);
-        FileServerInfo coordinator = new FileServerInfo(hostname, Constants.COORDINATOR_PORT);
-        this.fileServerEndPoints = new FileServerEndPointsImpl(coordinator);
-        this.fileServerServiceProcessor = new FileServerEndPoints.Processor(fileServerEndPoints);
     }
 
     private void startCoordinatorService() {
@@ -55,20 +48,6 @@ public class Coordinator {
                     coordinatorServiceProcessor));
 
             LOG.info("Started the coordinator service at port: " + Constants.COORDINATOR_PORT);
-            server.serve();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void startFileServerService(int port) {
-        try {
-            TServerTransport serverTransport = new TServerSocket(port);
-            // Use this for a multi-threaded server
-            TServer server = new TThreadPoolServer(new TThreadPoolServer.Args(serverTransport).processor(
-                    fileServerServiceProcessor));
-
-            LOG.info("Started the file server service at port: " + port);
             server.serve();
         } catch (Exception e) {
             e.printStackTrace();
@@ -107,7 +86,7 @@ public class Coordinator {
 
             String coordinatorHost = InetAddress.getLocalHost().getHostName();
             LOG.info("Starting coordinator with hostname: " + coordinatorHost);
-            final Coordinator coordinator = new Coordinator(nr, nw, coordinatorHost);
+            final Coordinator coordinator = new Coordinator(nr, nw);
 
             // start the services offered by coordinator in separate thread
             Runnable serviceThread = new Runnable() {

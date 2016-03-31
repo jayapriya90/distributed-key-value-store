@@ -18,7 +18,9 @@ struct FileInfo {
 enum Status {
     FILE_NOT_FOUND,
     SUCCESS,
-    NO_NODE_FOUND
+    ALREADY_LATEST,
+    NO_NODE_FOUND,
+    SERVER_CANNOT_BE_CONTACTED // thrown when quorum conditions are not met
 }
 struct ReadResponse {
     1: required Status status;

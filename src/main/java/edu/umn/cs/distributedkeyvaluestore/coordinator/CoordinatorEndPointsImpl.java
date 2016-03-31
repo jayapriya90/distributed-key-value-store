@@ -6,6 +6,7 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +29,7 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
     private int nw;
     private Set<FileServerInfo> servers;
     private boolean userSpecificedQuorumCount;
+    private boolean quorumConditionMet = true;
 
     // background thread to notify non-quorum members
     private ExecutorService backgroundThread;
@@ -67,6 +69,7 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
     @Override
     public Map<FileServerInfo, FileServerMetaData> getMetadata() throws TException {
         Map<FileServerInfo, FileServerMetaData> result = new HashMap<FileServerInfo, FileServerMetaData>();
+        // iterate the file servers list and get metadata from each server
         for (FileServerInfo server : servers) {
             TTransport nodeSocket = new TSocket(server.getHostname(), server.getPort());
             nodeSocket.open();
@@ -95,25 +98,44 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
             nr = n - nw + 1;
             LOG.info("Updating read and write quorum count..");
         } else {
-            LOG.info("User has specified read and write quorum count. Not updating quorum.");
+            if (!(nw > n/2)) {
+                quorumConditionMet = false;
+            }
+
+            if (!(nw + nr > n)) {
+                quorumConditionMet = false;
+            }
+            LOG.info("User has specified read and write quorum count. Not updating quorum." +
+                    " quorumConditionMet: " + quorumConditionMet);
         }
         LOG.info("n: " + n + " nw: " + nw + " nr: " + nr);
     }
 
     @Override
-    public FileServerMetaData getFileServerMetadata() throws TException {
-        return null;
-    }
-
-    @Override
     public Response submitRequest(Request request) throws TException {
         Response response = new Response(request.getType());
+
+        // server read and write request
         if (request.getType().equals(Type.READ)) {
-            ReadResponse readResponse = readInternal(request.getFilename());
-            response.setReadResponse(readResponse);
+
+            // if quorum condition is not met, the return error
+            if (!quorumConditionMet) {
+                response.setReadResponse(new ReadResponse(Status.SERVER_CANNOT_BE_CONTACTED));
+            } else {
+                ReadResponse readResponse = readInternal(request.getFilename());
+                response.setReadResponse(readResponse);
+            }
+
         } else {
-            WriteResponse writeResponse = writeInternal(request.getFilename(), request.getContents());
-            response.setWriteResponse(writeResponse);
+
+            // if quorum condition is not met, the return error
+            if (!quorumConditionMet) {
+                response.setWriteResponse(new WriteResponse(Status.SERVER_CANNOT_BE_CONTACTED));
+            } else {
+                WriteResponse writeResponse = writeInternal(request.getFilename(), request.getContents());
+                response.setWriteResponse(writeResponse);
+            }
+
         }
         return response;
     }
@@ -180,23 +202,23 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
 
         LOG.info(maxVersionServer + " contains latest write version: " + maxVersion + " for file: " + filename);
 
-        // increment version
-        maxVersion++;
-        LOG.info("Incremented version number for file: " + filename + " to version: " + maxVersion);
-
-        WriteResponse writeResponse = getWriteResponse(maxVersionServer, filename, filename, maxVersion);
-        LOG.info("Updated quorum file server (with max version): " + maxVersionServer + " to use new version: " + maxVersion);
+        // first write to the file server with max version number. The response will contain the incremented version
+        // number which will be used to update other servers
+        WriteResponse writeResponse = getWriteResponse(maxVersionServer, filename, contents);
+        long latestVersion = writeResponse.getVersion();
+        LOG.info("Successfully wrote to quorum file server (with max version): " + maxVersionServer + "." +
+                " Got new version: " + latestVersion + " for file: " + filename);
 
         // update other file servers in quorum to latest version and wait for it to complete
-        LOG.info("Updating other file servers in quorum to latest version: " + maxVersion);
+        LOG.info("Updating other file servers in quorum to latest version: " + latestVersion);
         writeQuorum.remove(maxVersionServer);
         for (FileServerInfo quorumServer : writeQuorum) {
-            WriteResponse wr = getWriteResponse(quorumServer, filename, contents, maxVersion);
+            WriteResponse wr = getUpdateResponse(quorumServer, filename, contents, latestVersion);
             LOG.info("Updated quorum server: " + quorumServer + " to version: " + wr.getVersion());
         }
 
         // update other file servers not in quorum to latest version in background and don't wait for completion
-        LOG.info("Notifying file servers not in quorum in background thread to latest version: " + maxVersion);
+        LOG.info("Notifying file servers not in quorum in background thread to latest version: " + latestVersion);
         List<FileServerInfo> nonQuorumServers = getNonQuorumServers(writeQuorum);
         backgroundThread.submit(new NonQuorumWrite(nonQuorumServers, filename, contents, maxVersion));
 
@@ -206,12 +228,22 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
         return writeResponse;
     }
 
-    private WriteResponse getWriteResponse(FileServerInfo server, String filename, String contents, long newVersion) throws TException {
+    private WriteResponse getUpdateResponse(FileServerInfo server, String filename, String contents,
+                                            long latestVersion) throws TException {
         TTransport nodeSocket = new TSocket(server.getHostname(), server.getPort());
         nodeSocket.open();
         TProtocol protocol = new TBinaryProtocol(nodeSocket);
         FileServerEndPoints.Client client = new FileServerEndPoints.Client(protocol);
-        WriteResponse writeResponse = client.writeContents(filename, contents, newVersion);
+        WriteResponse writeResponse = client.updateContentsToVersion(filename, contents, latestVersion);
+        return writeResponse;
+    }
+
+    private WriteResponse getWriteResponse(FileServerInfo server, String filename, String contents) throws TException {
+        TTransport nodeSocket = new TSocket(server.getHostname(), server.getPort());
+        nodeSocket.open();
+        TProtocol protocol = new TBinaryProtocol(nodeSocket);
+        FileServerEndPoints.Client client = new FileServerEndPoints.Client(protocol);
+        WriteResponse writeResponse = client.writeContents(filename, contents);
         return writeResponse;
     }
 
@@ -229,6 +261,7 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
         return nodes;
     }
 
+    // backgroun thread to update non-quorum file servers
     private static class NonQuorumWrite implements Runnable {
         private List<FileServerInfo> nonQuorum;
         private String filename;
@@ -250,9 +283,9 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
                     nodeSocket.open();
                     TProtocol protocol = new TBinaryProtocol(nodeSocket);
                     FileServerEndPoints.Client client = new FileServerEndPoints.Client(protocol);
-                    client.writeContents(filename, contents, version);
-                    LOG.info("Background thread - Successfully updated " + serverInfo + " about file: " + filename + " contents: " +
-                            contents + " version: " + version);
+                    WriteResponse wr = client.updateContentsToVersion(filename, contents, version);
+                    LOG.info("Background thread - Successfully updated " + serverInfo + " about file: " + filename +
+                            " contents: " + contents + " version: " + wr.getVersion());
                 } catch (TException e) {
                     e.printStackTrace();
                 } finally {

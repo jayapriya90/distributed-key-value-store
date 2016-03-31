@@ -1,7 +1,9 @@
 hello.txt
 hello.txt="hello world1"
-foo.txt=bar
+foo.txt=bar1
 foo.txt
 hello.txt="Hello World2"
+foo.txt=bar2
 hello.txt="Hello World3"
 hello.txt
+foo.txt=bar3

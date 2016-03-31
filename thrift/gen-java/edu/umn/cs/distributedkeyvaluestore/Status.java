@@ -14,7 +14,9 @@ import org.apache.thrift.TEnum;
 public enum Status implements org.apache.thrift.TEnum {
   FILE_NOT_FOUND(0),
   SUCCESS(1),
-  NO_NODE_FOUND(2);
+  ALREADY_LATEST(2),
+  NO_NODE_FOUND(3),
+  SERVER_CANNOT_BE_CONTACTED(4);
 
   private final int value;
 
@@ -40,7 +42,11 @@ public enum Status implements org.apache.thrift.TEnum {
       case 1:
         return SUCCESS;
       case 2:
+        return ALREADY_LATEST;
+      case 3:
         return NO_NODE_FOUND;
+      case 4:
+        return SERVER_CANNOT_BE_CONTACTED;
       default:
         return null;
     }

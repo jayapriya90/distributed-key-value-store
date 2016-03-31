@@ -117,17 +117,55 @@ public class FileServerEndPointsImpl implements FileServerEndPoints.Iface {
     }
 
     @Override
-    public WriteResponse writeContents(String filename, String contents, long version) throws TException {
+    public WriteResponse writeContents(String filename, String contents) throws TException {
         try {
             // only single write can acquire lock
             writeLock.lock();
             contentsMap.put(filename, contents);
-            versionMap.put(filename, version);
-            LOG.info("Wrote contents: " + contents + " to file: " + filename + " with version: " + version);
+            long updatedVersion = 0;
+            if (versionMap.containsKey(filename)) {
+                updatedVersion = versionMap.get(filename) + 1; // increment the already existing version here
+            }
+            versionMap.put(filename, updatedVersion);
+            LOG.info("Wrote contents: " + contents + " to file: " + filename + " with version: " + updatedVersion);
             WriteResponse writeResponse = new WriteResponse(Status.SUCCESS);
             writeResponse.setBytesWritten(contents.length());
-            writeResponse.setVersion(version);
+            writeResponse.setVersion(updatedVersion);
             return writeResponse;
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    @Override
+    public WriteResponse updateContentsToVersion(String filename, String contents, long version) throws TException {
+        try {
+            // this is request from coordinator to update to latest version or from "sync" operation
+            writeLock.lock();
+
+            // if the already contained version is same or greater then ignore the update as we already have latest copy
+            long currentVersion = -1;
+            if (versionMap.containsKey(filename)) {
+                currentVersion = versionMap.get(filename);
+            }
+
+            if (currentVersion >= version) {
+                LOG.warn("Ignoring updated as we already have latest version for file: " + filename +
+                        " currentVersion: " + currentVersion + " version: " + version);
+                WriteResponse writeResponse = new WriteResponse(Status.ALREADY_LATEST);
+                writeResponse.setVersion(currentVersion);
+                return writeResponse;
+            } else {
+                // we have lower version for file, so update it
+                contentsMap.put(filename, contents);
+                versionMap.put(filename, version);
+                WriteResponse writeResponse = new WriteResponse(Status.SUCCESS);
+                writeResponse.setBytesWritten(contents.length());
+                writeResponse.setVersion(version);
+                LOG.info("Successfully updated file: " + filename + " from version: " + currentVersion +
+                        " to version: " + version);
+                return writeResponse;
+            }
         } finally {
             writeLock.unlock();
         }

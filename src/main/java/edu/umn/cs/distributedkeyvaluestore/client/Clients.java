@@ -96,7 +96,8 @@ public class Clients {
                 return;
             }
 
-            int nClients = 1;
+            // default 3 clients, that run in different threads
+            int nClients = 3;
             List<String> input = null;
             if (cli.hasOption("f")) {
                 String inputFilename = cli.getOptionValue("f");
