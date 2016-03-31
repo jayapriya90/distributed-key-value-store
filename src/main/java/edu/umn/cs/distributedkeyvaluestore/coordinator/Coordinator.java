@@ -26,6 +26,7 @@ import java.net.UnknownHostException;
  * usage: coordinator
  * -nr <arg>  Size of read quorum (default chosen by nr + nw > n rule)
  * -nw <arg>  Size of write quorum (default chosen by nw > n/2 rule)
+ * -si <arg>  Sync interval in seconds (default: 3 seconds)
  * -h        Help
  */
 
@@ -35,8 +36,8 @@ public class Coordinator {
     private CoordinatorEndPointsImpl coordinatorEndPoints;
     private CoordinatorEndPoints.Processor coordinatorServiceProcessor;
 
-    public Coordinator(int nr, int nw) {
-        this.coordinatorEndPoints = new CoordinatorEndPointsImpl(nr, nw);
+    public Coordinator(int nr, int nw, long syncInterval) {
+        this.coordinatorEndPoints = new CoordinatorEndPointsImpl(nr, nw, syncInterval);
         this.coordinatorServiceProcessor = new CoordinatorEndPoints.Processor(coordinatorEndPoints);
     }
 
@@ -61,6 +62,7 @@ public class Coordinator {
         Options options = new Options();
         options.addOption("nr", true, "Size of read quorum (default chosen by nr + nw > n rule)");
         options.addOption("nw", true, "Size of write quorum (default chosen by nw > n/2 rule)");
+        options.addOption("si", true, "Sync interval (default: 5 seconds)");
         options.addOption("h", false, "Help");
 
         // command line parser for the above options
@@ -84,9 +86,15 @@ public class Coordinator {
                 nw = Integer.parseInt(cli.getOptionValue("nw"));
             }
 
+            long syncInterval = Constants.SYNC_TASK_INTERVAL;
+            if (cli.hasOption("si")) {
+                // convert user specified seconds to milliseconds
+                syncInterval = Integer.parseInt(cli.getOptionValue("si")) * 1000;
+            }
+
             String coordinatorHost = InetAddress.getLocalHost().getHostName();
-            LOG.info("Starting coordinator with hostname: " + coordinatorHost);
-            final Coordinator coordinator = new Coordinator(nr, nw);
+            LOG.info("Starting coordinator with hostname: " + coordinatorHost + " syncInterval: " + syncInterval + "ms");
+            final Coordinator coordinator = new Coordinator(nr, nw, syncInterval);
 
             // start the services offered by coordinator in separate thread
             Runnable serviceThread = new Runnable() {

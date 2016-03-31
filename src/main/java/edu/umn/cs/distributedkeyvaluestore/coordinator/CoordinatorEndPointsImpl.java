@@ -1,6 +1,7 @@
 package edu.umn.cs.distributedkeyvaluestore.coordinator;
 
 import edu.umn.cs.distributedkeyvaluestore.*;
+import edu.umn.cs.distributedkeyvaluestore.common.Constants;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -34,7 +35,16 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
     // background thread to notify non-quorum members
     private ExecutorService backgroundThread;
 
-    public CoordinatorEndPointsImpl(int nr, int nw) {
+    // timer that will schedule periodic sync task
+    private Timer syncTimer;
+    // sync timer task will be scheduled when coordinator receives first request.
+    // ASSUMPTION: When sync thread is started coordinator needs to know all nodes in the system, that is the reason
+    // we are starting this task after first read/write request is received. Also, after starting this task we assume
+    // that no new nodes will be added.
+    private static boolean firstRequest = true;
+    private long syncInterval;
+
+    public CoordinatorEndPointsImpl(int nr, int nw, long syncInterval) {
         this.n = 0;
         this.nr = nr;
         this.nw = nw;
@@ -45,6 +55,8 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
             this.userSpecificedQuorumCount = false;
         }
         this.backgroundThread = Executors.newSingleThreadExecutor();
+        this.syncTimer = new Timer("SYNC", true);
+        this.syncInterval = syncInterval;
     }
 
     @Override
@@ -113,6 +125,13 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
 
     @Override
     public Response submitRequest(Request request) throws TException {
+        if (firstRequest) {
+            LOG.info("Scheduling sync task..");
+            // start the sync task after 3 seconds and run it every 5 seconds or user specified interval
+            syncTimer.scheduleAtFixedRate(new SyncTimerTask(servers), Constants.SYNC_TASK_DELAY,
+                    syncInterval);
+            firstRequest = false;
+        }
         Response response = new Response(request.getType());
 
         // server read and write request
@@ -235,6 +254,7 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
         TProtocol protocol = new TBinaryProtocol(nodeSocket);
         FileServerEndPoints.Client client = new FileServerEndPoints.Client(protocol);
         WriteResponse writeResponse = client.updateContentsToVersion(filename, contents, latestVersion);
+        nodeSocket.close();
         return writeResponse;
     }
 
@@ -244,6 +264,7 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
         TProtocol protocol = new TBinaryProtocol(nodeSocket);
         FileServerEndPoints.Client client = new FileServerEndPoints.Client(protocol);
         WriteResponse writeResponse = client.writeContents(filename, contents);
+        nodeSocket.close();
         return writeResponse;
     }
 
@@ -259,41 +280,5 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
             nodes.remove(serverInfo);
         }
         return nodes;
-    }
-
-    // backgroun thread to update non-quorum file servers
-    private static class NonQuorumWrite implements Runnable {
-        private List<FileServerInfo> nonQuorum;
-        private String filename;
-        private String contents;
-        private long version;
-
-        public NonQuorumWrite(List<FileServerInfo> nonQuorum, String filename, String contents, long version) {
-            this.nonQuorum = nonQuorum;
-            this.filename = filename;
-            this.contents = contents;
-            this.version = version;
-        }
-
-        @Override
-        public void run() {
-            for (FileServerInfo serverInfo : nonQuorum) {
-                TTransport nodeSocket = new TSocket(serverInfo.getHostname(), serverInfo.getPort());
-                try {
-                    nodeSocket.open();
-                    TProtocol protocol = new TBinaryProtocol(nodeSocket);
-                    FileServerEndPoints.Client client = new FileServerEndPoints.Client(protocol);
-                    WriteResponse wr = client.updateContentsToVersion(filename, contents, version);
-                    LOG.info("Background thread - Successfully updated " + serverInfo + " about file: " + filename +
-                            " contents: " + contents + " version: " + wr.getVersion());
-                } catch (TException e) {
-                    e.printStackTrace();
-                } finally {
-                    if (nodeSocket != null) {
-                        nodeSocket.close();
-                    }
-                }
-            }
-        }
     }
 }
