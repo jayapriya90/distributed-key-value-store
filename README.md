@@ -91,4 +91,4 @@ hostname can be specified like below
 
 To specify read and write sequences from input file and print metadata of all servers
 
-> ./clients -f requests.txt -p
+> ./clients -f request.txt -p
