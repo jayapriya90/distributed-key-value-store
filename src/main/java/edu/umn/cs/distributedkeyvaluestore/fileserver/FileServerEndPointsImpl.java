@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Created by jayapriya on 3/25/16.
@@ -22,11 +25,17 @@ public class FileServerEndPointsImpl implements FileServerEndPoints.Iface {
     private FileServerInfo coordinator;
     private Map<String, String> contentsMap;
     private Map<String, Long> versionMap;
+    private ReadWriteLock rwLock;
+    private Lock readLock;
+    private Lock writeLock;
 
     public FileServerEndPointsImpl(FileServerInfo coordinator) {
         this.coordinator = coordinator;
         this.contentsMap = new HashMap<String, String>();
         this.versionMap = new HashMap<String, Long>();
+        this.rwLock = new ReentrantReadWriteLock();
+        this.readLock = rwLock.readLock();
+        this.writeLock = rwLock.writeLock();
     }
 
     @Override
@@ -70,51 +79,75 @@ public class FileServerEndPointsImpl implements FileServerEndPoints.Iface {
 
     @Override
     public FileServerMetaData getFileServerMetadata() throws TException {
-        List<FileInfo> fileInfos = new ArrayList<FileInfo>();
-        for(String filename: contentsMap.keySet()) {
-            long version = versionMap.get(filename);
-            String contents = contentsMap.get(filename);
-            fileInfos.add(new FileInfo(filename, version, contents));
+        try {
+            // allows multiple readers to acquire lock
+            readLock.lock();
+            List<FileInfo> fileInfos = new ArrayList<FileInfo>();
+            for (String filename : contentsMap.keySet()) {
+                long version = versionMap.get(filename);
+                String contents = contentsMap.get(filename);
+                fileInfos.add(new FileInfo(filename, version, contents));
+            }
+            FileServerMetaData fileServerMetaData = new FileServerMetaData(fileInfos);
+            LOG.info("Returning file server metadata: " + fileServerMetaData);
+            return fileServerMetaData;
+        } finally {
+            readLock.unlock();
         }
-        FileServerMetaData fileServerMetaData = new FileServerMetaData(fileInfos);
-        LOG.info("Returning file server metadata: " + fileServerMetaData);
-        return fileServerMetaData;
     }
 
     @Override
     public ReadResponse readContents(String filename) throws TException {
-        if (!contentsMap.containsKey(filename)) {
-            LOG.info(filename + " not found!");
-            return new ReadResponse(Status.FILE_NOT_FOUND);
-        }
+        try {
+            // allows multiple readers to acquire lock
+            readLock.lock();
+            if (!contentsMap.containsKey(filename)) {
+                LOG.info(filename + " not found!");
+                return new ReadResponse(Status.FILE_NOT_FOUND);
+            }
 
-        ReadResponse readResponse = new ReadResponse(Status.SUCCESS);
-        readResponse.setContents(contentsMap.get(filename));
-        readResponse.setVersion(versionMap.get(filename));
-        LOG.info("Sending read response: " + readResponse + " for file: " + filename);
-        return readResponse;
+            ReadResponse readResponse = new ReadResponse(Status.SUCCESS);
+            readResponse.setContents(contentsMap.get(filename));
+            readResponse.setVersion(versionMap.get(filename));
+            LOG.info("Sending read response: " + readResponse + " for file: " + filename);
+            return readResponse;
+        } finally {
+            readLock.unlock();
+        }
     }
 
     @Override
     public WriteResponse writeContents(String filename, String contents, long version) throws TException {
-        contentsMap.put(filename, contents);
-        versionMap.put(filename, version);
-        LOG.info("Wrote contents: " + contents + " to file: " + filename + " with version: " + version);
-        WriteResponse writeResponse = new WriteResponse(Status.SUCCESS);
-        writeResponse.setBytesWritten(contents.length());
-        writeResponse.setVersion(version);
-        return writeResponse;
+        try {
+            // only single write can acquire lock
+            writeLock.lock();
+            contentsMap.put(filename, contents);
+            versionMap.put(filename, version);
+            LOG.info("Wrote contents: " + contents + " to file: " + filename + " with version: " + version);
+            WriteResponse writeResponse = new WriteResponse(Status.SUCCESS);
+            writeResponse.setBytesWritten(contents.length());
+            writeResponse.setVersion(version);
+            return writeResponse;
+        } finally {
+            writeLock.unlock();
+        }
     }
 
     @Override
     public long getVersion(String filename) throws TException {
-        if (!versionMap.containsKey(filename)) {
-            LOG.info(filename + " not found! Return version: -1");
-            return -1;
-        }
+        try {
+            // allows multiple readers to acquire lock
+            readLock.lock();
+            if (!versionMap.containsKey(filename)) {
+                LOG.info(filename + " not found! Return version: -1");
+                return -1;
+            }
 
-        long version = versionMap.get(filename);
-        LOG.info("Returning version: " + version + " for file: " + filename);
-        return version;
+            long version = versionMap.get(filename);
+            LOG.info("Returning version: " + version + " for file: " + filename);
+            return version;
+        } finally {
+            readLock.unlock();
+        }
     }
 }

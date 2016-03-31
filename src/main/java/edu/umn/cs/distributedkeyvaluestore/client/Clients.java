@@ -125,26 +125,30 @@ public class Clients {
                 LOG.info("Requests: " + input);
             }
 
-            List<Future<?>> futures = new ArrayList<Future<?>>();
+            List<Future<ResponseWithTime>> futures = new ArrayList<Future<ResponseWithTime>>();
             for (String request : input) {
                 FileServerInfo randomServer = getRandomServerFromCoordinator(coordinatorHost);
                 RequestThread callable = new RequestThread(request, randomServer);
-                Future<?> futureResponse = executorService.submit(callable);
+                Future<ResponseWithTime> futureResponse = executorService.submit(callable);
                 futures.add(futureResponse);
             }
 
             for (int i = 0; i < futures.size(); i++) {
                 try {
                     String request = input.get(i);
-                    Object response = futures.get(i).get();
+                    ResponseWithTime responseWithTime = futures.get(i).get();
+                    long execTime = responseWithTime.executionTime;
+                    Object response = responseWithTime.response;
                     if (response instanceof ReadResponse) {
                         ReadResponse readResponse = (ReadResponse) response;
-                        LOG.info("Got read response: " + readResponse + " for request: " + request);
+                        LOG.info("Got read response: " + readResponse + " for request: " + request
+                                + " in " + execTime + " ms");
                     }
 
                     if (response instanceof WriteResponse) {
                         WriteResponse writeResponse = (WriteResponse) response;
-                        LOG.info("Got write response: " + writeResponse + " for request: " + request);
+                        LOG.info("Got write response: " + writeResponse + " for request: " + request
+                                + " in " + execTime + " ms");
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -239,7 +243,17 @@ public class Clients {
         return input;
     }
 
-    private static class RequestThread implements Callable<Object> {
+    private static class ResponseWithTime {
+        long executionTime;
+        Object response;
+
+        public ResponseWithTime(long execTime, Object response) {
+            this.executionTime = execTime;
+            this.response = response;
+        }
+    }
+
+    private static class RequestThread implements Callable<ResponseWithTime> {
 
         private String requestString;
         private FileServerInfo server;
@@ -250,7 +264,8 @@ public class Clients {
         }
 
         @Override
-        public Object call() throws Exception {
+        public ResponseWithTime call() throws Exception {
+            long start = System.currentTimeMillis();
             TTransport nodeSocket = new TSocket(server.getHostname(), server.getPort());
             try {
                 nodeSocket.open();
@@ -263,12 +278,14 @@ public class Clients {
                     String contents = tokens[1];
                     LOG.info("Sending write request (filename: " + filename + " contents: " + contents + ") to " + server);
                     WriteResponse writeResponse = client.write(filename, contents);
-                    return writeResponse;
+                    long end = System.currentTimeMillis();
+                    return new ResponseWithTime(end - start, writeResponse);
                 } else {
                     // read request
                     LOG.info("Sending read request (filename: " + requestString + ") to " + server);
                     ReadResponse readResponse = client.read(requestString);
-                    return readResponse;
+                    long end = System.currentTimeMillis();
+                    return new ResponseWithTime(end - start, readResponse);
                 }
             } finally {
                 if (nodeSocket != null) {
