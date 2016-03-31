@@ -35,23 +35,40 @@ public class Coordinator {
 
     private CoordinatorEndPointsImpl coordinatorEndPoints;
     private CoordinatorEndPoints.Processor coordinatorServiceProcessor;
+    private TServer server = null;
+    private TServerTransport serverTransport = null;
 
     public Coordinator(int nr, int nw, long syncInterval) {
         this.coordinatorEndPoints = new CoordinatorEndPointsImpl(nr, nw, syncInterval);
         this.coordinatorServiceProcessor = new CoordinatorEndPoints.Processor(coordinatorEndPoints);
     }
 
-    private void startCoordinatorService() {
+    public void startCoordinatorService() {
         try {
-            TServerTransport serverTransport = new TServerSocket(Constants.COORDINATOR_PORT);
+            serverTransport = new TServerSocket(Constants.COORDINATOR_PORT);
             // Use this for a multi-threaded server
-            TServer server = new TThreadPoolServer(new TThreadPoolServer.Args(serverTransport).processor(
+            server = new TThreadPoolServer(new TThreadPoolServer.Args(serverTransport).processor(
                     coordinatorServiceProcessor));
 
             LOG.info("Started the coordinator service at port: " + Constants.COORDINATOR_PORT);
             server.serve();
         } catch (Exception e) {
             e.printStackTrace();
+            if (serverTransport != null) {
+                serverTransport.close();
+            }
+            if (server != null) {
+                server.stop();
+            }
+        }
+    }
+
+    public void stopCoordinatorService() {
+        if (serverTransport != null) {
+            serverTransport.close();
+        }
+        if (server != null) {
+            server.stop();
         }
     }
 

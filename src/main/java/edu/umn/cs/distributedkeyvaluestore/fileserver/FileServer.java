@@ -67,7 +67,6 @@ public class FileServer {
     }
 
     public static void main(String[] args) throws Exception {
-        TTransport socket = null;
         try {
             final int port = Utilities.getRandomPort();
             final String hostname = InetAddress.getLocalHost().getHostName();

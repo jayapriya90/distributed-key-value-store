@@ -110,12 +110,15 @@ public class CoordinatorEndPointsImpl implements CoordinatorEndPoints.Iface {
             nr = n - nw + 1;
             LOG.info("Updating read and write quorum count..");
         } else {
-            if (!(nw > n/2)) {
+            // not sufficient servers
+            if (n < nw || n < nr) {
                 quorumConditionMet = false;
-            }
-
-            if (!(nw + nr > n)) {
+            } else if (!(nw > n/2)) {
                 quorumConditionMet = false;
+            } else if (!(nw + nr > n)) {
+                quorumConditionMet = false;
+            } else {
+                quorumConditionMet = true;
             }
             LOG.info("User has specified read and write quorum count. Not updating quorum." +
                     " quorumConditionMet: " + quorumConditionMet);

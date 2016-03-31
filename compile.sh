@@ -22,6 +22,10 @@ echo "Extracting maven binaries.."
 tar -xzvf apache-maven-3.3.9-bin.tar.gz -C $INSTALL_DIR/maven --strip-components=1
 
 echo "Compiling source.."
-$MAVEN_BIN/mvn clean install -q
-echo "Compilation successful! Please refer README.md for running different components."
+$MAVEN_BIN/mvn clean install -DskipTests -q
+
+echo "Running tests.."
+$MAVEN_BIN/mvn test
+
+echo "Compilation and tests ran successfully! Please refer README.md for running different components."
 
