@@ -39,7 +39,7 @@ public class SyncTimerTask extends TimerTask {
         try {
             // we need to know the list of files before initiating the sync operation.
             // We can get the list of files from any node.
-            List<String> filenames = getAllFilenames(servers.iterator().next());
+            Set<String> filenames = getAllFilenames(servers);
             boolean anyOutOfSync = false;
             for (String filename : filenames) {
                 long latestVersion = Long.MIN_VALUE;
@@ -83,17 +83,19 @@ public class SyncTimerTask extends TimerTask {
         }
     }
 
-    private List<String> getAllFilenames(FileServerInfo server) throws TException {
-        TTransport nodeSocket = new TSocket(server.getHostname(), server.getPort());
-        nodeSocket.open();
-        TProtocol protocol = new TBinaryProtocol(nodeSocket);
-        FileServerEndPoints.Client client = new FileServerEndPoints.Client(protocol);
-        FileServerMetaData metaData = client.getFileServerMetadata();
-        List<String> filenames = new ArrayList<String>();
-        for (FileInfo fileInfo : metaData.getFileinfos()) {
-            filenames.add(fileInfo.getFilename());
+    private Set<String> getAllFilenames(Set<FileServerInfo> servers) throws TException {
+        Set<String> filenames = new HashSet<String>();
+        for (FileServerInfo server : servers) {
+            TTransport nodeSocket = new TSocket(server.getHostname(), server.getPort());
+            nodeSocket.open();
+            TProtocol protocol = new TBinaryProtocol(nodeSocket);
+            FileServerEndPoints.Client client = new FileServerEndPoints.Client(protocol);
+            FileServerMetaData metaData = client.getFileServerMetadata();
+            for (FileInfo fileInfo : metaData.getFileinfos()) {
+                filenames.add(fileInfo.getFilename());
+            }
+            nodeSocket.close();
         }
-        nodeSocket.close();
         return filenames;
     }
 
