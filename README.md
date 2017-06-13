@@ -18,6 +18,7 @@ Options for coordinator
 -----------------------
 coordinator script should be run first before running any scripts. The usage for
 coordinator script is
+<code>
 usage: coordinator
  -h          Help
  -nr <arg>   Size of read quorum (default chosen by nr + nw > n rule)
@@ -30,6 +31,7 @@ To run with custom read and write quorum size
 > ./coordinator -nr 4 -nr 5
 To run with custom sync interval (time interval between which the sync task are run)
 > ./coordinator -si 10
+</code>
 
 Options for fileserver
 ----------------------
@@ -40,10 +42,12 @@ ports for every run) or can be run on different machines. When coordinator
 and fileserver scripts are run on different machines it is mandatory to provide
 the hostname for coordinator
 
+<code>
 To run (coordinator running on same host),
 > ./fileserver
 To run when coordinator running on different host,
 > ./node <hostname-for-coordinator>
+</code>
 
 Options for clients
 -------------------
@@ -51,6 +55,8 @@ clients script can mimic multiple concurrent clients. Internally, it uses multip
 threads one for each independent client.
 
 Following is the usage guide for clients script.
+
+<code>
 usage: clients
  -f <arg>   File containing each line with read/write request in
             filename=contents format.
@@ -92,3 +98,4 @@ hostname can be specified like below
 To specify read and write sequences from input file and print metadata of all servers
 
 > ./clients -f request.txt -p
+</code>
