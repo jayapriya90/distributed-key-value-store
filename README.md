@@ -26,11 +26,11 @@ usage: coordinator
  + -si <arg>   Sync interval (default: 5 seconds)
 
 <code>
-To run with defaults,
++ To run with defaults,
 > ./coordinator
-To run with custom read and write quorum size
++ To run with custom read and write quorum size
 > ./coordinator -nr 4 -nr 5
-To run with custom sync interval (time interval between which the sync task are run)
++ To run with custom sync interval (time interval between which the sync task are run)
 > ./coordinator -si 10
 </code>
 
@@ -44,9 +44,9 @@ and fileserver scripts are run on different machines it is mandatory to provide
 the hostname for coordinator
 
 <code>
-To run (coordinator running on same host),
++ To run (coordinator running on same host),
 > ./fileserver
-To run when coordinator running on different host,
++ To run when coordinator running on different host,
 > ./node <hostname-for-coordinator>
 </code>
 
@@ -58,44 +58,44 @@ threads one for each independent client.
 Following is the usage guide for clients script.
 
 usage: clients
- -f <arg>   File containing each line with read/write request in
-            filename=contents format.
-            Example: input.txt contents for RRW sequence
-            file1
-            file2
-            file3=value3
- -h <arg>   Hostname for coordinator (default: localhost)
- -help      Help
- -i <arg>   CSV list of request sequence in filename=contents format.
-            Example: file1,file2,file3=value3 is RRW (read, read, write)
-            sequence.
- -n <arg>   Number of concurrent clients (Each client will run in a
-            thread)
- -p         Print file servers metadata
+ + -f <arg>   File containing each line with read/write request in
+              filename=contents format.
+              Example: input.txt contents for RRW sequence
+              file1
+              file2
+              file3=value3
+ + -h <arg>   Hostname for coordinator (default: localhost)
+ + -help      Help
+ + -i <arg>   CSV list of request sequence in filename=contents format.
+              Example: file1,file2,file3=value3 is RRW (read, read, write)
+              sequence.
+ + -n <arg>   Number of concurrent clients (Each client will run in a
+              thread)
+ + -p         Print file servers metadata
 
 To run,
 <code>
-Example: 3 read requests with 3 clients
++ Example: 3 read requests with 3 clients
 > ./clients -n 3 -i foo1.txt,foo2.txt,foo3.txt
 
-Example: 2 writes followed by 2 reads on 3 clients
++ Example: 2 writes followed by 2 reads on 3 clients
 
 > ./clients -n 3 -i foo1.txt=bar1,foo2.txt=bar2,foo1,foo2
 
-To print all file servers metadata after a read,
++ To print all file servers metadata after a read,
 
 > ./clients -i foo1.txt -p
 
-To print all file servers metadata alone
++ To print all file servers metadata alone
 
 > ./clients -p
 
-If clients script and coordinator runs on different hosts then coordinator's
++ If clients script and coordinator runs on different hosts then coordinator's
 hostname can be specified like below
 
 > ./clients -h <coordinator-hostname> -r foo1.txt -p
 
-To specify read and write sequences from input file and print metadata of all servers
++ To specify read and write sequences from input file and print metadata of all servers
 
 > ./clients -f request.txt -p
 </code>
