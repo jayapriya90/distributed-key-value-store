@@ -20,10 +20,10 @@ coordinator script should be run first before running any scripts. The usage for
 coordinator script is
 
 usage: coordinator
- -h          Help
- -nr <arg>   Size of read quorum (default chosen by nr + nw > n rule)
- -nw <arg>   Size of write quorum (default chosen by nw > n/2 rule)
- -si <arg>   Sync interval (default: 5 seconds)
+ + -h          Help
+ + -nr <arg>   Size of read quorum (default chosen by nr + nw > n rule)
+ + -nw <arg>   Size of write quorum (default chosen by nw > n/2 rule)
+ + -si <arg>   Sync interval (default: 5 seconds)
 
 <code>
 To run with defaults,
@@ -43,7 +43,7 @@ ports for every run) or can be run on different machines. When coordinator
 and fileserver scripts are run on different machines it is mandatory to provide
 the hostname for coordinator
 
-<code
+<code>
 To run (coordinator running on same host),
 > ./fileserver
 To run when coordinator running on different host,
