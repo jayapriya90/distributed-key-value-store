@@ -53,7 +53,7 @@ the hostname for coordinator
 > ./fileserver
 
 + To run when coordinator running on different host
-> ./node <hostname-for-coordinator>
+> ./node (hostname-for-coordinator)
 
 </code>
 
@@ -100,7 +100,7 @@ To run,
 + If clients script and coordinator runs on different hosts then coordinator's
 hostname can be specified like below
 
-> ./clients -h <coordinator-hostname> -r foo1.txt -p
+> ./clients -h (coordinator-hostname) -r foo1.txt -p
 
 + To specify read and write sequences from input file and print metadata of all servers
 
