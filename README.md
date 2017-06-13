@@ -26,7 +26,8 @@ usage: coordinator
  + -si <arg>   Sync interval (default: 5 seconds)
 
 <code>
-+ To run with defaults,
+
++ To run with defaults
 > ./coordinator
 
 + To run with custom read and write quorum size
@@ -47,10 +48,11 @@ and fileserver scripts are run on different machines it is mandatory to provide
 the hostname for coordinator
 
 <code>
-+ To run (coordinator running on same host),
+
++ To run (coordinator running on same host)
 > ./fileserver
 
-+ To run when coordinator running on different host,
++ To run when coordinator running on different host
 > ./node <hostname-for-coordinator>
 
 </code>
