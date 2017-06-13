@@ -28,10 +28,13 @@ usage: coordinator
 <code>
 + To run with defaults,
 > ./coordinator
+
 + To run with custom read and write quorum size
 > ./coordinator -nr 4 -nr 5
+
 + To run with custom sync interval (time interval between which the sync task are run)
 > ./coordinator -si 10
+
 </code>
 
 Options for fileserver
@@ -46,8 +49,10 @@ the hostname for coordinator
 <code>
 + To run (coordinator running on same host),
 > ./fileserver
+
 + To run when coordinator running on different host,
 > ./node <hostname-for-coordinator>
+
 </code>
 
 Options for clients
