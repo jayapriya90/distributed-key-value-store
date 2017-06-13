@@ -1,4 +1,4 @@
-# DistributedFileSystem
+# Distributed FileSystem
 DFS that uses Gifford's Quorum Based Protocol for file consistency. 
 
 How To Compile:
@@ -18,13 +18,14 @@ Options for coordinator
 -----------------------
 coordinator script should be run first before running any scripts. The usage for
 coordinator script is
-<code>
+
 usage: coordinator
  -h          Help
  -nr <arg>   Size of read quorum (default chosen by nr + nw > n rule)
  -nw <arg>   Size of write quorum (default chosen by nw > n/2 rule)
  -si <arg>   Sync interval (default: 5 seconds)
 
+<code>
 To run with defaults,
 > ./coordinator
 To run with custom read and write quorum size
@@ -42,7 +43,7 @@ ports for every run) or can be run on different machines. When coordinator
 and fileserver scripts are run on different machines it is mandatory to provide
 the hostname for coordinator
 
-<code>
+<code
 To run (coordinator running on same host),
 > ./fileserver
 To run when coordinator running on different host,
@@ -56,7 +57,6 @@ threads one for each independent client.
 
 Following is the usage guide for clients script.
 
-<code>
 usage: clients
  -f <arg>   File containing each line with read/write request in
             filename=contents format.
@@ -74,7 +74,7 @@ usage: clients
  -p         Print file servers metadata
 
 To run,
-
+<code>
 Example: 3 read requests with 3 clients
 > ./clients -n 3 -i foo1.txt,foo2.txt,foo3.txt
 
